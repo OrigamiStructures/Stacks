@@ -2,7 +2,6 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
-use Stacks\Constants\LayerCon;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Lib\StackRegistry;
 use Cake\ORM\Query;
@@ -73,7 +72,7 @@ class StacksTable extends Table
      * @param array $config The configuration for the Table.
      * @return void
      */
-    public function initialize(array $config) : void {
+    public function initialize(array $config) {
         //Check if proper table is created
         parent::initialize($config);
 		$this->configureStackCache();
@@ -185,7 +184,7 @@ class StacksTable extends Table
      * @param TableSchemaInterface $schema The table definition fetched from database.
      * @return TableSchemaInterface the altered schema
      */
-    protected function _initializeSchema(TableSchemaInterface $schema): TableSchemaInterface
+    protected function _initializeSchema(TableSchemaInterface $schema)
     {
         foreach ($this->stackSchema as $column) {
             $schema->addColumn($column['name'], $column['specs']);
