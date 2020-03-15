@@ -1,7 +1,9 @@
 <?php
 
 
-namespace App\Model\Traits;
+namespace Stacks\Model\Traits;
+
+use Stacks\Constants\LayerCon;
 
 /**
  * LayerElementAccessTrait
@@ -9,7 +11,7 @@ namespace App\Model\Traits;
  * This trait adds data access features to classes that have an ID indexed
  * array available at ::getData().
  *
- * @package App\Model\Traits
+ * @package Stacks\Model\Traits
  */
 trait LayerElementAccessTrait
 {
@@ -35,7 +37,8 @@ trait LayerElementAccessTrait
         if(is_null($layer)) {
             $haystack = $this->getData();
         } else {
-            $haystack = array_flip($IDs($layer));
+            /* @todo fix this line. what was it doing? */
+//            $haystack = array_flip($IDs($layer));
         }
         return key_exists($id, $haystack);
     }

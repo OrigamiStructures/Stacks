@@ -1,9 +1,13 @@
 <?php
 
 
-namespace App\Constants;
+namespace Stacks\Constants;
 
-
+/**
+ * Class MemCon Member Constants
+ *
+ * @package Stacks\Constants
+ */
 class MemCon
 {
 

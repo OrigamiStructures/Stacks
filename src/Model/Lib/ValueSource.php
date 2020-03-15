@@ -1,31 +1,31 @@
 <?php
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
 use Cake\Core\ConventionsTrait;
 use Cake\ORM\Entity;
 use Cake\Utility\Inflector;
-use App\Lib\Traits\ErrorRegistryTrait;
+use Stacks\Lib\Traits\ErrorRegistryTrait;
 
 /**
  * ValueSource
- * 
- * Validates and registers the name of a property or method that will 
+ *
+ * Validates and registers the name of a property or method that will
  * be the source of an Entity value.
  *
  * @author dondrake
  */
 class ValueSource {
-	
+
 	use ConventionsTrait;
 	use ErrorRegistryTrait;
-	
+
 	/**
 	 * Name of the property or method that provides the value
 	 * @var string
 	 */
 	protected $_source = '';
 	/**
-	 * The namespaced name of the Entity 
+	 * The namespaced name of the Entity
 	 * @var string
 	 */
 	protected $_name = '';
@@ -44,10 +44,10 @@ class ValueSource {
 	 * @var boolean
 	 */
 	protected $_isProperty = FALSE;
-	
+
 	/**
 	 * Construct the object
-	 * 
+	 *
 	 * @param string|Entity $entity plural, singular, lc, initial cap all ok
 	 * @param string $source proper case, suffix '..' or '()' to force property or method
 	 * @return boolean
@@ -60,19 +60,19 @@ class ValueSource {
 		$this->_source = trim($source, '().');
 		return $this->isValid();
 	}
-	
+
 	/**
 	 * Report the name of the configured entity
-	 * 
+	 *
 	 * @return string
 	 */
 	public function entityName() {
 		return lcfirst(namespaceSplit($this->_name));
 	}
-	
+
 	/**
 	 * Report the name of the node that will provide data
-	 * 
+	 *
 	 * @return string
 	 */
 	public function sourceNode() {
@@ -81,22 +81,22 @@ class ValueSource {
 		}
 		return $this->_source;
 	}
-	
+
 	/**
 	 * Can a value be returned from this object?
-	 * 
+	 *
 	 * @return boolean
 	 */
 	public function isValid() {
 		$ambiguous = $this->_isMethod && $this->_isProperty;
-		return $this->_isEntity 
-				&& !$ambiguous 
+		return $this->_isEntity
+				&& !$ambiguous
 				&& ($this->_isMethod || $this->_isProperty);
 	}
-	
+
 	/**
 	 * Return the target value from this entity
-	 * 
+	 *
 	 * @param Entity $entity
 	 * @return mixed
 	 */
@@ -105,7 +105,7 @@ class ValueSource {
 			$ambiguous = $this->_isMethod && $this->_isProperty ? 'TRUE' : "FALSE";
 			$method = $this->_isMethod ? 'TRUE' : "FALSE";
 			$property = $this->_isProperty ? 'TRUE' : "FALSE";
-			$this->registerError('If ' . get_class($entity) . 
+			$this->registerError('If ' . get_class($entity) .
 					' is a generic entity, you\'ll have to bake the model '
 					. 'and entity to use it, even if they are left empty.'
 					. "Ambiguous: $ambiguous, Method: $method, "
@@ -120,16 +120,16 @@ class ValueSource {
 		}
 		return $result;
 	}
-	
+
 	/**
 	 * Verify and return an entity object
-	 * 
-	 * The name or an object might be sent. In either case, get an object 
+	 *
+	 * The name or an object might be sent. In either case, get an object
 	 * and if it is an Entity, set class properties and return it.
-	 * 
-	 * 'entity', 'Entity', 'dispositionsPieces', or 
+	 *
+	 * 'entity', 'Entity', 'dispositionsPieces', or
 	 * '\Name\Space\Entity' are valid strings
-	 * 
+	 *
 	 * @param string|Entity $entity
 	 * @return Entity
 	 */
@@ -137,7 +137,7 @@ class ValueSource {
 		if (is_string($entity)) {
 			$entity = namespaceSplit($entity);
 			$entity = array_pop($entity);
-			$className = "\\App\\Model\\Entity\\" . 
+			$className = "\\App\\Model\\Entity\\" .
 					$this->_singularName(Inflector::pluralize(ucfirst($entity)));
 			$entity = new $className();
 		}
@@ -147,13 +147,13 @@ class ValueSource {
 		}
 		return $entity;
 		}
-	
+
 	/**
 	 * Determine what the source points to on the Entity
-	 * 
+	 *
 	 * property, method, neither, both
 	 * can't detect bad property names
-	 * 
+	 *
 	 * @param Entity $entity
 	 * @param string $source
 	 */
@@ -169,5 +169,5 @@ class ValueSource {
 		}
 		return;
 	}
-	
+
 }

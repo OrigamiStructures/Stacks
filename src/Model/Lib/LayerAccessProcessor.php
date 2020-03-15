@@ -1,18 +1,19 @@
 <?php
 
 
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
-use App\Interfaces\Layer;
-use App\Interfaces\LayerAccessInterface;
-use App\Interfaces\LayerStructureInterface;
-use App\Interfaces\LayerTaskInterface;
+use Cake\Collection\CollectionInterface;
+use Stacks\Model\Lib\Layer;
+use Stacks\Interfaces\LayerAccessInterface;
+use Stacks\Interfaces\LayerStructureInterface;
+use Stacks\Interfaces\LayerTaskInterface;
 use Cake\Collection\Collection;
 
 /**
  * LayerAccessProcessor
  *
- * @package App\Model\Lib
+ * @package Stacks\Model\Lib
  */
 class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
 {
@@ -94,7 +95,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
     {
         if (is_array($data)){
             $result = new \ArrayIterator($data);
-        } elseif (is_a($data, '\App\Model\Lib\Layer')) {
+        } elseif (is_a($data, '\Stacks\Model\Lib\Layer')) {
             $result = new \ArrayIterator($data->toArray());
         } elseif (is_a($data, '\Iterator'))  {
             $result = $data;
@@ -370,6 +371,29 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
             $result = array_pop($chunked);
         }
         return $result;
+//        $x = [
+//            'index' => [
+//                'finder' => 'all',
+//                'page' => (int) 1,
+//                'current' => (int) 4,
+//                'count' => (int) 83,
+//                'perPage' => (int) 4,
+//                'start' => (int) 1,
+//                'end' => (int) 4,
+//                'prevPage' => false,
+//                'nextPage' => true,
+//                'pageCount' => (int) 21,
+//                'sort' => 'collector',
+//                'direction' => 'desc',
+//                'limit' => null,
+//                'sortDefault' => 'collector',
+//                'directionDefault' => 'desc',
+//                'scope' => 'index',
+//                'completeSort' => [
+//                    'Identities.collector' => 'desc'
+//                ]
+//            ]
+//        ];
     }
 
     /**

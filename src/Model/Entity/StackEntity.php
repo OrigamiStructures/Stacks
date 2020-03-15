@@ -1,20 +1,17 @@
 <?php
 
-namespace App\Model\Entity;
+namespace Stacks\Model\Entity;
 
-use App\Exception\UnknownLayerException;
-use App\Interfaces\LayerStructureInterface;
-use App\Model\Lib\LayerAccessProcessor;
+use Stacks\Exception\UnknownLayerException;
+use Stacks\Interfaces\LayerStructureInterface;
+use Stacks\Model\Lib\LayerAccessProcessor;
 use Cake\ORM\Entity;
-use App\Model\Lib\Layer;
+use Stacks\Model\Lib\Layer;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
-use App\Interfaces\xxxLayerAccessInterface;
-use App\Model\Lib\LayerAccessArgs;
-use App\Exception\BadClassConfigurationException;
+use Stacks\Model\Lib\LayerAccessArgs;
+use Stacks\Exception\BadClassConfigurationException;
 use Cake\Utility\Text;
-use http\Exception\BadMethodCallException;
-use http\Exception\InvalidArgumentException;
 
 /**
  * Stacks
@@ -37,8 +34,6 @@ class StackEntity extends Entity implements LayerStructureInterface
      * The value migrates forward from the concrete stackTable
      * during creation and population of the entity and its values
      *
-     * @see App\Model\Table\StacksTable::newVersionMarshalStack()
-     *
      * @var string
      */
     protected $rootName = FALSE;
@@ -59,8 +54,6 @@ class StackEntity extends Entity implements LayerStructureInterface
      *        $rootDisplaySource of the concrete stackTable for this entity
      *
      * @todo Make [1] a true statement
-     *
-     * @see App\Model\Table\StacksTable::newVersionMarshalStack()
      *
      * @var string
      */
@@ -97,7 +90,7 @@ class StackEntity extends Entity implements LayerStructureInterface
         $className = $className ?? $this->$name->entityClass();
 
         $Iterator = new LayerAccessProcessor($name, $className);
-        if (is_a($this->$name, '\App\Model\Lib\Layer')) {
+        if (is_a($this->$name, '\Stacks\Model\Lib\Layer')) {
             $result = $this->$name;
         } else {
             $result = [];
@@ -384,10 +377,10 @@ class StackEntity extends Entity implements LayerStructureInterface
      *
      * {@inheritdoc}
      *
-     * @param Layer $property
-     * @param Layer $value
+     * @param string $property
+     * @param mixed $value
      * @param array $options
-     * @return type
+     * @return Entity
      */
     public function set($property, $value = null, array $options = [])
     {

@@ -1,11 +1,12 @@
 <?php
 
 
-namespace App\Interfaces;
+namespace Stacks\Interfaces;
 
 
-use App\Model\Lib\ValueSource;
-use App\Model\Lib\ValueSourceRegistry;
+use Stacks\Model\Lib\ValueSource;
+use Stacks\Model\Lib\ValueSourceRegistry;
+use Stacks\Model\Lib\Layer;
 
 /**
  * LayerAccessInterface
@@ -13,7 +14,7 @@ use App\Model\Lib\ValueSourceRegistry;
  * This interface establishes the way LA objects that are meant to act as data end-points
  * must return their contents.
  *
- * @package App\Interfaces
+ * @package Stacks\Interfaces
  */
 interface LayerAccessInterface
 {

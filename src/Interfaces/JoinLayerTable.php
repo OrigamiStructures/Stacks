@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Interfaces;
+namespace Stacks\Interfaces;
 
 
 use Cake\ORM\Query;
@@ -16,7 +16,7 @@ use Cake\ORM\Query;
  *
  * This interface names the method that carries out the additional process
  *
- * @package App\Interfaces
+ * @package Stacks\Interfaces
  */
 interface JoinLayerTable
 {

@@ -1,5 +1,5 @@
 <?php
-namespace App\Exception;
+namespace Stacks\Exception;
 
 use Cake\Core\Exception\Exception;
 

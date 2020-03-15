@@ -1,7 +1,8 @@
 <?php
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
 use Cake\Datasource\Paginator;
+use Cake\ORM\Query;
 
 /**
  * StackPaginator
@@ -22,6 +23,10 @@ class StackPaginator extends Paginator {
 	 * created part way through stack assembly. Sending the pagination
 	 * processes in as a callable allows it to be on the scene for this
 	 * mid-stream use.
+     *
+     * Adjustments are made to the pagingParams.
+     * Repository-keyed sets are converted to scope-keyed sets so that
+     * multiple independent sets from a single Table are possible.
 	 *
 	 * @todo Does this method have to do any additional work to make
 	 *		 $params and $settings work properly?
@@ -34,21 +39,57 @@ class StackPaginator extends Paginator {
     public function paginate($findStackCallable, array $params = [], array $settings = []) {
 
 		$paginatorCallable = function($query) use ($params, $settings) {
-			return parent::paginate($query, $params, $settings);
+		    /*
+		     * $query is lost by paginate() so we need to read repository
+		     * name first for the params fix later
+		     */
+            $alias = $query->getRepository()->getAlias();
+			$result = parent::paginate($query, $params, $settings);
+			/*
+			 * Paging params are stored by Repository alias. Since our's are
+			 * locked in by the stack structure, we need a new name to keep separate
+			 * sets on their own paging scheme when they are also from the same
+			 * repository. So we migrate the data block onto a key = to the scope key.
+			 * Scope is the query key for the page so this makes sense and works.
+			 *
+			 * The block is added to the request by some other code.
+			 * debug $this->request->getParam('paging') to see the result
+			 */
+            $scope = $this->_pagingParams[$alias]['scope'];
+			$this->_pagingParams = [$scope => $this->_pagingParams[$alias]];
+            return $result;
 		};
 
-		return $findStackCallable($paginatorCallable);
-
-//		list($table, $Ids) = $object->distill($settings['seed'], $settings['ids']);
-//		$query = $table->find('all')->where(['id IN' => $Ids]);
-//
-//		$result = parent::paginate($query, $params, $settings);
-//
-//		$IDs = $result->reduce(function($accum, $entity) {
-//			$accum[] = $entity->id;
-//			return $accum;
-//		}, []);
-//		return $object->stacksFromRoot($Ds);
+        /**
+         * @todo Exteded pagination: Explanation follows in comment
+         * Go through the stacks and paginate each of their layers as appropriate.
+         *
+         * We can add new paging blocks for each layer case. There is a question though:
+         * when a user pages through a layer, do we let that layer in each stack page
+         * in synch? or do we page each individually?
+         * If done individually, we need a new scoped paging block for each or a
+         * way to track the desired page in each layer somehow; stepping outside the
+         * established request-param method.
+         * example/index?index[page]=2&piece[page]=id55-2+id671-3
+         * example/index?index[page]=2&layer[piece]=id55-2+id671-3
+         * We'd have to modify the Pagination helper to create these new query args
+         *
+         * Looks like making a new query arg pattern would take study. But running
+         * all the layers in synch will not work because they won't all have the same
+         * number of pages. So, who would determine the correct settings for the block?
+         *
+         * It should not be hard to id the scopes and let each run independently. It just
+         * means the url query params could grow long and the paging arrays in the
+         * request would be large
+         * example/index?index[page]=2&piece55[page]=2&piece671[page]=3
+         * Additionally, if we use ajax to load page fragments, we'll have to write
+         * js page update routines to fix any pagination tool blocks so they know the
+         * new query args an don't restore some old page state when used.
+         */
+		$result = $findStackCallable($paginatorCallable);
+//		$this->_pagingParams['newScope' . $entity->rootId()] = ['block' => 'of', 'paging' => 'data'];
+//		osd($this->_pagingParams, 'paging prams after callable');
+		return $result;
     }
 
 }

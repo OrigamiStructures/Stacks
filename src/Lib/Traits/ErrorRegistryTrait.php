@@ -1,5 +1,5 @@
 <?php
-namespace App\Lib\Traits;
+namespace Stacks\Lib\Traits;
 
 use Cake\Error\Debugger;
 
@@ -17,13 +17,13 @@ use Cake\Error\Debugger;
 trait ErrorRegistryTrait {
 
 	protected $_errors = [];
-	
+
 // <editor-fold defaultstate="collapsed" desc="ERROR MANAGEMENT">
 
 	private function registerError($message) {
 		$trace = collection(Debugger::trace(['start' => 2, 'format' => 'points']));
 		$stack = $trace->reduce(function($accum, $node){
-			
+
 			$node = !is_array($node) ? ['file' => 'unknown', 'line' => 'unknown'] : $node;
 			$namespace = explode('/', $node['file']);
 			$file = array_pop($namespace);
@@ -43,5 +43,5 @@ trait ErrorRegistryTrait {
 	}
 
 // </editor-fold>
-	
+
 }
