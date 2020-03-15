@@ -1,0 +1,4 @@
+/vendor
+/.idea/Stacks.iml
+/.idea/php.xml
+/composer.lock
