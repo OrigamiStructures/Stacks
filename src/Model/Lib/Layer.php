@@ -1,17 +1,17 @@
 <?php
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
-use App\Interfaces\LayerAccessInterface;
-use App\Interfaces\LayerStructureInterface;
-use App\Model\Lib\LayerAccessArgs;
-use App\Model\Traits\LayerElementAccessTrait;
+use Stacks\Interfaces\LayerAccessInterface;
+use Stacks\Interfaces\LayerStructureInterface;
+use Stacks\Model\Lib\LayerAccessArgs;
+use Stacks\Model\Traits\LayerElementAccessTrait;
 use Cake\Core\ConventionsTrait;
-use Cake\ORM\Enitity;
 use Cake\Collection\Collection;
-use App\Exception\BadClassConfigurationException;
-use \App\Interfaces\xxxLayerAccessInterface;
-//use App\Model\Traits\LayerAccessTrait;
-use App\Lib\Traits\ErrorRegistryTrait;
+use Stacks\Exception\BadClassConfigurationException;
+use Stacks\Lib\Traits\ErrorRegistryTrait;
+use Stacks\Model\Lib\LayerAccessProcessor;
+use Stacks\Model\Lib\ValueSource;
+use Stacks\Model\Lib\ValueSourceRegistry;
 
 /**
  * StackLayer
@@ -75,6 +75,7 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
      * @param array $entities
      * @param string $type Forced to camalized, ignored if entities are present
      * @throws BadClassConfigurationException
+     * @throws \Exception
      */
     public function __construct(array $entities = [], $type = NULL) {
         try {
@@ -82,7 +83,7 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
             $this->_initClassProperties($entities, $type);
             $this->_initEntitySet($entities);
 
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
 
             throw $ex;
 
@@ -235,7 +236,7 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
 		if ($style === 'bare') {
 			return $this->_className;
 		} else {
-			return 'App\\Model\\Entity\\'.$this->_className;
+			return 'Stacks\\Model\\Entity\\'.$this->_className;
 		}
 
     }
@@ -343,7 +344,7 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
             $class = "\App\Model\Entity\\$this->_className";
             $sampleData = new $class;
         }
-        $this->_entityProperties = $sampleData->visibleProperties();
+        $this->_entityProperties = $sampleData->getVisible();
     }
 // </editor-fold>
 

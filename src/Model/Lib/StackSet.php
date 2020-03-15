@@ -1,14 +1,10 @@
 <?php
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
-use App\Interfaces\LayerStructureInterface;
-use App\Model\Entity\StackEntity;
-use App\Interfaces\xxxLayerAccessInterface;
-//use App\Model\Traits\LayerAccessTrait;
-use App\Model\Lib\StackSetAccessArgs;
-use App\Model\Traits\LayerElementAccessTrait;
+use Stacks\Interfaces\LayerStructureInterface;
+use Stacks\Model\Entity\StackEntity;
+use Stacks\Model\Traits\LayerElementAccessTrait;
 use Cake\Core\ConventionsTrait;
-use Cake\Error\Debugger;
 use Cake\Utility\Text;
 
 /**
@@ -71,7 +67,7 @@ class StackSet implements LayerStructureInterface, \Countable {
         $stacks = $this->getData();
         $Product = new LayerAccessProcessor($name, $entityClass);
         foreach ($stacks as $stack) {
-            if (is_a($stack->$name, '\App\Model\Lib\Layer')) {
+            if (is_a($stack->$name, '\Stacks\Model\Lib\Layer')) {
                 $result = $stack->$name;
             } else {
                 $result = [];

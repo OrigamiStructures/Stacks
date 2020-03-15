@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
-use App\Exception\MissingPropertyException;
-use App\Interfaces\LayerAccessInterface;
-use App\Interfaces\LayerTaskInterface;
-use App\Interfaces\xxxLayerAccessInterface;
+use Stacks\Model\Lib\Layer;
+use Stacks\Exception\MissingPropertyException;
+use Stacks\Interfaces\LayerAccessInterface;
+use Stacks\Interfaces\LayerTaskInterface;
 use BadMethodCallException;
 use Cake\Utility\Inflector;
-use App\Model\Lib\ValueSource;
-use App\Lib\Traits\ErrorRegistryTrait;
-use App\Model\Lib\ValueSourceRegistry;
-use http\Exception\InvalidArgumentException;
+use Stacks\Model\Lib\ValueSource;
+use Stacks\Lib\Traits\ErrorRegistryTrait;
+use Stacks\Model\Lib\ValueSourceRegistry;
+use \InvalidArgumentException;
 
 /**
  * LayerAccessArgs manages the arguments used by Set/Stack/Layer::load()
@@ -414,7 +414,7 @@ class LayerAccessArgs implements LayerAccessInterface
 
     private function evaluateLayer()
     {
-        if (!$this->hasLayer() && is_a($this->data(), 'App\Model\Lib\Layer')) {
+        if (!$this->hasLayer() && is_a($this->data(), 'Stacks\Model\Lib\Layer')) {
             $this->setLayer($this->data()->layerName());
         }
     }
@@ -445,9 +445,17 @@ class LayerAccessArgs implements LayerAccessInterface
         return $this->source_node[$name] !== FALSE;
     }
 
+    /**
+     * @param $name
+     * @return bool
+     */
     public function hasAccessNodeObject($name)
     {
-        return !is_null($this->getValueRegistry()->get($name));
+        try {
+            return !is_null($this->getValueRegistry()->get($name));
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -492,7 +500,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * 1 is actually 'first in page' rather than 'first in collection'
      *
      * @param type $param
-     * @return \App\Model\Lib\LayerAccessArgs
+     * @return \Stacks\Model\Lib\LayerAccessArgs
      */
     public function setLimit($param)
     {
@@ -563,7 +571,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * filter_operator will be assumed as == if it hasn't been set
      *
      * @param mixed $param
-     * @return \App\Model\Lib\LayerAccessArgs
+     * @return \Stacks\Model\Lib\LayerAccessArgs
      */
     public function setFilterValue($param)
     {
@@ -591,7 +599,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * true (=== T), false (=== F), truthy (boolean of value)
      *
      * @param string $param
-     * @return \App\Model\Lib\LayerAccessArgs
+     * @return \Stacks\Model\Lib\LayerAccessArgs
      */
     public function setFilterOperator($param)
     {

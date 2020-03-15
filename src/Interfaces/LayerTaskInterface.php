@@ -1,8 +1,8 @@
 <?php
-namespace App\Interfaces;
+namespace Stacks\Interfaces;
 
-use App\Model\Lib\LayerAccessArgs;
-use App\Model\Lib\LayerAccessProcessor;
+use Stacks\Model\Lib\LayerAccessArgs;
+use Stacks\Model\Lib\LayerAccessProcessor;
 
 /**
  * Interface LayerTaskInterface
@@ -21,7 +21,7 @@ use App\Model\Lib\LayerAccessProcessor;
  * configured with it's LAA, it won't change when an external agent modifies its LAA
  * by reference.
  *
- * @package App\Interfaces
+ * @package Stacks\Interfaces
  */
 interface LayerTaskInterface
 {

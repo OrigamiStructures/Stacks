@@ -1,20 +1,18 @@
 <?php
 
-namespace App\Model\Entity;
+namespace Stacks\Model\Entity;
 
-use App\Exception\UnknownLayerException;
-use App\Interfaces\LayerStructureInterface;
-use App\Model\Lib\LayerAccessProcessor;
+use Stacks\Constants\LayerCon;
+use Stacks\Exception\UnknownLayerException;
+use Stacks\Interfaces\LayerStructureInterface;
+use Stacks\Model\Lib\LayerAccessProcessor;
 use Cake\ORM\Entity;
-use App\Model\Lib\Layer;
+use Stacks\Model\Lib\Layer;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
-use App\Interfaces\xxxLayerAccessInterface;
-use App\Model\Lib\LayerAccessArgs;
-use App\Exception\BadClassConfigurationException;
+use Stacks\Model\Lib\LayerAccessArgs;
+use Stacks\Exception\BadClassConfigurationException;
 use Cake\Utility\Text;
-use http\Exception\BadMethodCallException;
-use http\Exception\InvalidArgumentException;
 
 /**
  * Stacks
@@ -37,8 +35,6 @@ class StackEntity extends Entity implements LayerStructureInterface
      * The value migrates forward from the concrete stackTable
      * during creation and population of the entity and its values
      *
-     * @see App\Model\Table\StacksTable::newVersionMarshalStack()
-     *
      * @var string
      */
     protected $rootName = FALSE;
@@ -59,8 +55,6 @@ class StackEntity extends Entity implements LayerStructureInterface
      *        $rootDisplaySource of the concrete stackTable for this entity
      *
      * @todo Make [1] a true statement
-     *
-     * @see App\Model\Table\StacksTable::newVersionMarshalStack()
      *
      * @var string
      */
@@ -97,7 +91,7 @@ class StackEntity extends Entity implements LayerStructureInterface
         $className = $className ?? $this->$name->entityClass();
 
         $Iterator = new LayerAccessProcessor($name, $className);
-        if (is_a($this->$name, '\App\Model\Lib\Layer')) {
+        if (is_a($this->$name, '\Stacks\Model\Lib\Layer')) {
             $result = $this->$name;
         } else {
             $result = [];
@@ -127,7 +121,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     public function IDs($layer = null)
     {
         if(is_null($layer)) {
-            $result = $this->rootID(LAYERACC_WRAP);
+            $result = $this->rootID(LayerCon::LAYERACC_WRAP);
         } else {
             $result = $this->getLayer($layer)->toDistinctList('id');
         }
@@ -135,26 +129,33 @@ class StackEntity extends Entity implements LayerStructureInterface
     }
 
     /**
-     * Adds Layer property empty checks to other native checks
+     * Checks that a field is empty
      *
-     * {@inheritdoc}
+     * This is not working like the PHP `empty()` function. The method will
+     * return true for:
      *
-     * @param string $property The property to check.
+     * - `''` (empty string)
+     * - `null`
+     * - `[]`
+     *
+     * and false in all other cases.
+     *
+     * @param string $field The field to check.
      * @return bool
      */
-    public function isEmpty($property = null)
+    public function isEmpty(string $field): bool
     {
-        if (is_null($property)) {
-            $property = $this->rootLayerName();
+        if (is_null($field)) {
+            $field = $this->rootLayerName();
         }
-        $value = $this->get($property);
+        $value = $this->get($field);
         if (is_object($value)
-            && $value instanceof \App\Model\Lib\Layer
+            && $value instanceof Layer
             && $value->count() === 0
         ) {
             return true;
         }
-        return parent::isEmpty($property);
+        return parent::isEmpty($field);
     }
 
     /**
@@ -223,7 +224,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      * @param boolean $unwrap
      * @return entity|array
      */
-    public function rootElement($unwrap = LAYERACC_UNWRAP)
+    public function rootElement($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
         $result = $this->{$this->rootLayerName()}->toArray();
         return $this->_resolveWrapper($result, $unwrap);
@@ -249,7 +250,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      * @param boolean $unwrap
      * @return string|array
      */
-    public function rootID($unwrap = LAYERACC_UNWRAP)
+    public function rootID($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
         $result = $this->{$this->rootLayerName()}->IDs();
         return $this->_resolveWrapper($result, $unwrap);
@@ -263,10 +264,10 @@ class StackEntity extends Entity implements LayerStructureInterface
      * @param boolean $unwrap
      * @return string|array
      */
-    public function rootDisplayValue($unwrap = LAYERACC_UNWRAP)
+    public function rootDisplayValue($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
         /* @var Layer $rootLayer */
-        $rootLayer = layer($this->rootElement(LAYERACC_WRAP));
+        $rootLayer = layer($this->rootElement(LayerCon::LAYERACC_WRAP));
         $title = $rootLayer->toValueList($this->rootDisplaySource());
         return array_shift($title);
 //        osd($rootLayer);
@@ -384,10 +385,10 @@ class StackEntity extends Entity implements LayerStructureInterface
      *
      * {@inheritdoc}
      *
-     * @param Layer $property
-     * @param Layer $value
+     * @param string $property
+     * @param mixed $value
      * @param array $options
-     * @return type
+     * @return Entity
      */
     public function set($property, $value = null, array $options = [])
     {

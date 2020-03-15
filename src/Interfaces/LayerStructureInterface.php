@@ -1,11 +1,12 @@
 <?php
 
 
-namespace App\Interfaces;
+namespace Stacks\Interfaces;
 
 
-use App\Model\Lib\LayerAccessArgs;
-use App\Model\Lib\LayerAccessProcessor;
+use Cake\ORM\Entity;
+use Stacks\Model\Lib\LayerAccessArgs;
+use Stacks\Model\Lib\LayerAccessProcessor;
 
 interface LayerStructureInterface
 {
@@ -13,8 +14,8 @@ interface LayerStructureInterface
     /**
      * Gather the available data at this level and package the iterator
      *
-     * @param $name The property name this layer is stored on in a StackEntity
-     * @param $className $the Entity class stored in the Layer
+     * @param string $name The property name this layer is stored on in a StackEntity
+     * @param Entity $className the Entity class stored in the Layer
      * @return LayerAccessProcessor
      */
     public function getLayer($name, $className);

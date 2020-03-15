@@ -3,7 +3,7 @@ namespace Stacks\Exception;
 
 use Cake\Core\Exception\Exception;
 
-class StackRegistryException extends Exception
+class MissingPropertyException extends Exception
 {
 
     public function __construct($message, $code = 500, $previous = null)

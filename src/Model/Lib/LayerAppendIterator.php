@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
 
 class LayerAppendIterator extends \AppendIterator implements \Countable

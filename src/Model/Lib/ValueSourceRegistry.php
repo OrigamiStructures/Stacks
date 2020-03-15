@@ -1,8 +1,8 @@
 <?php
-namespace App\Model\Lib;
+namespace Stacks\Model\Lib;
 
 use Cake\Core\ObjectRegistry;
-use App\Exception\MissingClassException;
+use Stacks\Exception\MissingClassException;
 
 /**
  * ValueSourceRegistry
@@ -24,7 +24,7 @@ class ValueSourceRegistry extends ObjectRegistry {
 	 * @param string $class The product of _resolveClassName($class)
 	 * @param string $alias The name to file this object under
 	 * @param array $config Guraranteed by LayerAccessArgs::buildAccessObject( )
-	 * @return \App\Model\Lib\class
+	 * @return \Stacks\Model\Lib\class
 	 */
 	protected function _create($class, $alias, $config) {
 		return new $class($config['entity'], $config['node']);
@@ -39,8 +39,8 @@ class ValueSourceRegistry extends ObjectRegistry {
 	 * @param string $class Always 'ValueSource'
 	 * @return string
 	 */
-	protected function _resolveClassName($class) {
-		return "\\App\\Model\\Lib\\$class";
+	protected function _resolveClassName($class) : string {
+		return "\\Stacks\\Model\\Lib\\$class";
 	}
 
 	/**
@@ -50,7 +50,7 @@ class ValueSourceRegistry extends ObjectRegistry {
 	 * @param string $plugin
 	 * @throws MissingClassException
 	 */
-	protected function _throwMissingClassError($class, $plugin) {
+	protected function _throwMissingClassError($class, $plugin) : void {
 		$msg = [];
 		$msg[] = "The class $class ";
 		$msg[] = !empty($plugin) ? "for plugin '$plugin' " : '';
@@ -76,7 +76,7 @@ class ValueSourceRegistry extends ObjectRegistry {
 		 return parent::load($objectName, $config);
 	 }
 
-	 public function __debugInfo()
+	 public function __debugInfo() : array
      {
          return parent::__debugInfo();
      }
