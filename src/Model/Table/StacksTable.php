@@ -2,7 +2,9 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
+use PHPUnit\Exception;
 use Stacks\Constants\LayerCon;
+use Stacks\Exception\BadClassConfigurationException;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Lib\StackRegistry;
 use Cake\ORM\Query;
@@ -305,6 +307,8 @@ class StacksTable extends Table
 	 * @param array $ids
      * @param string|callable
 	 * @return array Root entity id set for the stack
+     * @throws BadClassConfigurationException
+     * @throws Exception
 	 */
 	protected function distillation($seed, $ids, $paginator = 'none') {
 		$query = $this->{$this->distillMethodName($seed)}($ids);
