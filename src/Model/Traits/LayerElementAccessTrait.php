@@ -15,15 +15,16 @@ use Stacks\Constants\LayerCon;
  */
 trait LayerElementAccessTrait
 {
-
     /**
      * Get the count of stored entities
      *
-     * @return integer
+     * @return int
      */
-    public function count() {
+    public function count(): int {
         return count($this->getData());
     }
+
+
 
     /**
      * Does the primary data or the named layer contain the id'd item?

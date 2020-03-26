@@ -422,7 +422,7 @@ class StacksTable extends Table
 			if ($stack->isEmptyStack()) { continue; }
 
 			$stack->clean();
-			$this->stacks->insert($id, $stack);
+			$this->stacks->insertToStackSet($id, $stack);
             if (!$inRegistry) {
                 $this->writeRegistry($id, $stack);
             }
