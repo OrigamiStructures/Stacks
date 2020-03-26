@@ -70,6 +70,11 @@ class StacksTable extends Table
 	protected $registry = FALSE;
 
     /**
+     * @var StackSet
+     */
+	public $stacks;
+
+    /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
@@ -396,30 +401,35 @@ class StacksTable extends Table
     public function stacksFromRoot($ids) {
 		$this->stacks = $this->stackSet($this->template());
         foreach ($ids as $id) {
+            /* @var false|StackEntity $stack */
+
+            $inCache = false;
+            $inRegistry = true;
             if($this->stacks->element($id, LayerCon::LAYERACC_ID)){
                 continue;
             }
             $stack = $this->readRegistry($id);
             if($stack === FALSE) {
+                $inRegistry = false;
                 $stack = $this->readCache($id);
+                $inCache = $stack === false ? false : true;
             }
             if($stack === FALSE) {
                 $stack = $this->MarshalStack($id);
             }
 
-//			$stack = $this->readRegistry($id);
-//			if (!$stack && !$this->stacks->element($id, LayerCon::LAYERACC_ID)) {
-//				$stack = $this->writeRegistry($id, $this->MarshalStack($id));
-//			}
-
 			/* Abandon any empty entities. Empty root layer = empty stack */
-			if ($stack->count($this->rootName()) == 0) { continue; }
+			if ($stack->count($stack->rootElement(LayerCon::LAYERACC_LAYER)) == 0) { continue; }
 
 			$stack->clean();
 			$this->stacks->insert($id, $stack);
-			$this->writeRegistry($id, $stack);
-			$this->writeCache($id, $stack);
-		}
+            if (!$inRegistry) {
+                $this->writeRegistry($id, $stack);
+            }
+            if (!$inCache) {
+                $this->writeCache($id, $stack);
+            }
+        }
  		return $this->stacks;
 	}
 
@@ -470,7 +480,8 @@ class StacksTable extends Table
 	 */
 	protected function readCache($id) {
 		if (Configure::read('stackCache')) {
-			return Cache::read($this->cacheKey($id), $this->cacheName());
+			$result = Cache::read($this->cacheKey($id), $this->cacheName());
+			return $result ?? false;
 		}
 		return FALSE;
 	}
