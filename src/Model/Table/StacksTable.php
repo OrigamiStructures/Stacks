@@ -2,6 +2,7 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
+use Cake\Utility\Inflector;
 use PHPUnit\Exception;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\BadClassConfigurationException;
@@ -116,12 +117,11 @@ class StacksTable extends Table
 	 */
 	private function configureStackCache() {
 		if (is_null(Cache::getConfig($this->cacheName()))) {
-			Cache::setConfig($this->cacheName(),
-					[
+			Cache::setConfig($this->cacheName(), [
 				'className' => 'File',
-				'path' => CACHE . 'stack_entities' . DS,
-				'prefix' => $this->cacheName() . '_',
-				'duration' => '+1 week',
+				'path' => CACHE . 'stacks' . DS . Inflector::underscore($this->cacheName()) . DS,
+				'prefix' => 'stack_' . '_',
+				'duration' => '+1 year',
 				'serialize' => true,
 			]);
 		}
@@ -419,7 +419,7 @@ class StacksTable extends Table
             }
 
 			/* Abandon any empty entities. Empty root layer = empty stack */
-			if ($stack->count($stack->rootElement(LayerCon::LAYERACC_LAYER)) == 0) { continue; }
+			if ($stack->isEmptyStack()) { continue; }
 
 			$stack->clean();
 			$this->stacks->insert($id, $stack);

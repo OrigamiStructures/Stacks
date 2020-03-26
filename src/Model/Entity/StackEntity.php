@@ -230,6 +230,16 @@ class StackEntity extends Entity implements LayerStructureInterface
         return $this->_resolveWrapper($result, $unwrap);
     }
 
+    /**
+     * Is this StackEntity empty?
+     *
+     * @return bool
+     */
+    public function isEmptyStack()
+    {
+        return count($this->rootElement(LayerCon::LAYERACC_WRAP)) == 0;
+    }
+
     public function setRoot($layer)
     {
         $this->set('rootName', $layer);
