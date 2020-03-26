@@ -407,18 +407,17 @@ class StacksTable extends Table
                 $stack = $this->MarshalStack($id);
             }
 
-
-
-			$stack = $this->readRegistry($id);
-			if (!$stack && !$this->stacks->element($id, LayerCon::LAYERACC_ID)) {
-				$stack = $this->writeRegistry($id, $this->MarshalStack($id));
-			}
+//			$stack = $this->readRegistry($id);
+//			if (!$stack && !$this->stacks->element($id, LayerCon::LAYERACC_ID)) {
+//				$stack = $this->writeRegistry($id, $this->MarshalStack($id));
+//			}
 
 			/* Abandon any empty entities. Empty root layer = empty stack */
 			if ($stack->count($this->rootName()) == 0) { continue; }
 
 			$stack->clean();
 			$this->stacks->insert($id, $stack);
+			$this->writeRegistry($id, $stack);
 			$this->writeCache($id, $stack);
 		}
  		return $this->stacks;
