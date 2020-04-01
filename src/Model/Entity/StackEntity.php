@@ -198,6 +198,21 @@ class StackEntity extends Entity implements LayerStructureInterface
         return $this->count($layer) === 0;
     }
 
+    /**
+     * Gets the list of visible fields.
+     *
+     * The list of visible fields is all standard fields
+     * plus virtual fields minus hidden fields.
+     *
+     * @return string[] A list of fields that are 'visible' in all
+     *     representations.
+     */
+    public function getVisible(): array
+    {
+        return array_diff(parent::getVisible(), ['rootName', 'rootDisplaySource']);
+    }
+
+
     public function hasLayer($layer)
     {
         return $this->count($layer) > 0;
