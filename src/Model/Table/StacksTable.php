@@ -6,6 +6,7 @@ use Cake\Utility\Inflector;
 use PHPUnit\Exception;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\BadClassConfigurationException;
+use Stacks\Exception\StackRegistryException;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Lib\StackRegistry;
 use Cake\ORM\Query;
@@ -234,7 +235,7 @@ class StacksTable extends Table
 	 * @param Query $query
 	 * @param array $options
 	 * @return StackSet
-	 * @throws \BadMethodCallException
+     * @throws \Exception
 	 */
 	public function findStacksFor($query, $options) {
 
@@ -258,6 +259,7 @@ class StacksTable extends Table
      * @param $seed string
      * @param $ids array
      * @return StackSet
+     * @throws \Exception
      */
     public function stacksFor($seed, $ids) {
         return $this->processStackQuery($seed, $ids);
@@ -279,8 +281,9 @@ class StacksTable extends Table
     /**
      * @param $seed string
      * @param $ids array
-     * @param bool|callable $paginator
-     * @return StackSet\
+     * @param bool|callable|string $paginator
+     * @return StackSet
+     * @throws \Exception
      */
     private function processStackQuery($seed, $ids, $paginator = 'none') {
         if (empty($ids)) {
@@ -312,8 +315,7 @@ class StacksTable extends Table
 	 * @param array $ids
      * @param string|callable
 	 * @return array Root entity id set for the stack
-     * @throws BadClassConfigurationException
-     * @throws Exception
+     * @throws \Exception
 	 */
 	protected function distillation($seed, $ids, $paginator = 'none') {
 		$query = $this->{$this->distillMethodName($seed)}($ids);
@@ -569,6 +571,7 @@ class StacksTable extends Table
 	 * @todo There is no way to override the StackSet class
 	 *	    in the case of conventions-breaking usage
 	 *
+     * @param $template
 	 * @return StackSet
 	 */
 	protected function stackSet($template) {
@@ -654,7 +657,8 @@ class StacksTable extends Table
 	 * @param string $table The name of the table class by convention
 	 * @param string $column Name of the integer column to search
 	 * @param array $ids
-	     */
+     * @return Query
+	 */
 	protected function _distillFromJoinTable($table, $column, $ids) {
 		$joinTable = TableRegistry::getTableLocator()
 				->get($table)
