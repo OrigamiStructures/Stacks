@@ -318,8 +318,14 @@ class StacksTable extends Table
      * @throws \Exception
 	 */
 	protected function distillation($seed, $ids, $paginator = 'none') {
+	    /* @var Query $query */
+
 		$query = $this->{$this->distillMethodName($seed)}($ids);
-		$query = $this->localConditions($query);
+		$query = $this->localConditions(
+		    $query,
+            $this->getAlias(),
+            namespaceSplit(get_class($query->getRepository()))
+        );
 		if ($paginator !== 'none') {
 			$query = $paginator($query/*, $params, $settings*/);
 		}
@@ -330,19 +336,22 @@ class StacksTable extends Table
 	/**
 	 * Add any local-stack appropriate conditions to the query
 	 *
-	 * Override in each concrete StackTable class to suit the situation.
-	 * For example PersonCardsTable adds: where(['member_type' => 'Person'])
-	 * and many other places might add: where(['user_id' => $userId])
-	 *
-	 * I imagine a situation where superusers would need to change the
-	 * 'normal' behavior, so while most uses won't carry $options,
-	 * the signature allows it for fine-tuning the stack results
+	 * Override in each concrete StackTable class to implement.
+     * The two active table names are provided so the implementing
+     * Table class has enough context to choose a proper query modification.
+     *
+     * ConcreteTable::localConditions() are the place to implement
+     * Authorization scope policies if you need them. Your policy will be
+     * operating on the query produced by the distiller you used for
+     * the request.
 	 *
 	 * @param Query $query
+     * @param string $stackTableName
+     * @param string $distillerTableName
 	 * @param array $options Allow special data injection just in case
 	 * @return Query
 	 */
-	protected function localConditions($query, $options = []) {
+	protected function localConditions($query, $stackTableName, $distillerTableName, $options = []) {
 		return $query;
 	}
 
