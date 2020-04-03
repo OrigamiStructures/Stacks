@@ -313,7 +313,7 @@ class StacksTable extends Table
 	 *
 	 * @param string $seed
 	 * @param array $ids
-     * @param string|callable
+     * @param string|callable $paginator
 	 * @return array Root entity id set for the stack
      * @throws \Exception
 	 */
