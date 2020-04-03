@@ -3,7 +3,7 @@ namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\Utility\Inflector;
-use PHPUnit\Exception;
+use Cake\Routing\Router;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\BadClassConfigurationException;
 use Stacks\Exception\StackRegistryException;
