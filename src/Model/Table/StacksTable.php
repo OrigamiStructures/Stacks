@@ -345,17 +345,58 @@ class StacksTable extends Table
      * operating on the query produced by the distiller you used for
      * the request.
 	 *
-	 * @param Query $query
+    /**
+     * Local Implementation of StackTable localConditions
+     *
+     * @param Query $query
      * @param string $stackTableName
      * @param string $distillerTableName
-	 * @param array $options Allow special data injection just in case
-	 * @return Query
-	 */
-	protected function localConditions($query, $stackTableName, $distillerTableName, $options = []) {
-		return $query;
-	}
+     * @param array $options Allow special data injection just in case
+     * @return Query
+     */
+    protected function localConditions($query, $stackTableName, $distillerTableName, $options = [])
+    {
+        $context = $this->queryContext($stackTableName, $distillerTableName);
+        $identity = Router::getRequest()->getAttribute('identity');
 
-	/**
+        if (!is_null($identity) && method_exists(
+                $this->getPolicyClassName($distillerTableName),
+                "scope$context"
+            ))
+        {
+            return $identity->applyScope($context, $query);
+        } else {
+            return $query;
+        }
+    }
+
+    /**
+     * Get the name of a Policy for a particular table
+     *
+     * @param $fragment string The distiller class name
+     * @return string
+     */
+    protected function getPolicyClassName($fragment): string
+    {
+        return "\App\Policy\\{$fragment}TablePolicy";
+    }
+    /**
+     * Get name for the query context
+     *
+     * In a policy this will potentially be the back part of a method name:
+     *      function scopeStackTableDistillerTable( )
+     *
+     * @param $stack string The StackTable alias
+     * @param $dist string The distiller class name
+     * @return string
+     */
+    protected function queryContext($stack, $dist): string
+    {
+        return $stack . $dist;
+    }
+
+
+    /**
 	 * From mixed seed types, distill to a root ID set
 	 *
 	 * <code>
