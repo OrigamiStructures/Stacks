@@ -324,7 +324,7 @@ class StacksTable extends Table
 		$query = $this->localConditions(
 		    $query,
             $this->getAlias(),
-            namespaceSplit(get_class($query->getRepository()))
+            $query->getRepository()->getAlias()
         );
 		if ($paginator !== 'none') {
 			$query = $paginator($query/*, $params, $settings*/);
