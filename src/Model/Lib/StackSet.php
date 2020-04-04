@@ -80,6 +80,16 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
     }
 
     /**
+     * Get the list of layer in these stack entities
+     * 
+     * @return array|string[]
+     */
+    public function getLayerList()
+    {
+        return $this->template->getVisible();
+    }
+
+    /**
      * Get an new LayerAccessArgs instance
      * @return LayerAccessArgs
      */
