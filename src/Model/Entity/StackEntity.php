@@ -292,7 +292,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     public function rootDisplayValue($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
         /* @var Layer $rootLayer */
-        $rootLayer = layer($this->rootElement(LayerCon::LAYERACC_WRAP));
+        $rootLayer = new Layer($this->rootElement(LayerCon::LAYERACC_WRAP));
         $title = $rootLayer->toValueList($this->rootDisplaySource());
         return array_shift($title);
 //        osd($rootLayer);
@@ -367,7 +367,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     protected function _resolveReturnStructure($data, $asArray, $entityType)
     {
         if (!$asArray) {
-            $data = layer($data, $entityType);
+            $data = new Layer($data, $entityType);
         }
         return $data;
     }

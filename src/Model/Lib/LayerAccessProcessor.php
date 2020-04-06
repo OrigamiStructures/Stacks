@@ -173,7 +173,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
     public function toLayer()
     {
         $result = $this->toArray();
-        return layer($result, $this->entityClass);
+        return new Layer($result, $this->entityClass);
     }
 
     /**
