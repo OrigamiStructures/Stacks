@@ -443,7 +443,7 @@ class StacksTable extends Table
 	/**
 	 * Read the stacks from registry, cache or assemble and cache them
 	 *
-	 * This is the destination for all the distillFor variants.
+	 * This is the getDestination for all the distillFor variants.
 	 * It calls all the individual marshaller methods for
 	 * the current concrete stack table
 	 *
