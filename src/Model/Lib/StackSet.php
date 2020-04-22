@@ -50,6 +50,11 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
     {
         $this->template = $stackEntityTemplate;
     }
+
+    public function getTemplate()
+    {
+        return $this->template;
+    }
     //<editor-fold desc="LayerStructureInterface Realization">
     /**
      * Gather the available data at this level and package the iterator

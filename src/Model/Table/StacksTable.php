@@ -291,7 +291,9 @@ class StacksTable extends Table
         }
 
         $IDs = $this->distillation($seed, $ids, $paginator);
-        return $this->stacksFromRoot($IDs);
+        $stackSet = $this->stacksFromRoot($IDs);
+        $this->localLayerConditions($stackSet);
+        return $stackSet;
     }
 
 
@@ -334,23 +336,29 @@ class StacksTable extends Table
 	}
 
 	/**
-	 * Add any local-stack appropriate conditions to the query
+	 * Add any local-stack appropriate conditions to the seed query
 	 *
 	 * Override in each concrete StackTable class to implement.
-     * The two active table names are provided so the implementing
-     * Table class has enough context to choose a proper query modification.
+     * The two active table names (current stack table and current
+     * distiller table) are provided so the implementing Table class
+     * (distiller) has enough context to choose a proper query modification.
      *
-     * ConcreteTable::localConditions() are the place to implement
-     * Authorization scope policies if you need them. Your policy will be
+     * ConcreteDistillerTable::localConditions() is the place to implement
+     * your override process for scoping the query. Your policy will be
      * operating on the query produced by the distiller you used for
      * the request.
-	 *
-    /**
-     * Local Implementation of StackTable localConditions
+     *
+     * If you don't override and are using the Authentication/Authorization
+     * plugins and are curently logged in, this default implementation will
+     * look for a scope policy (eg. ArticlePolicy::scopeAuthorStackArticles
+     * when getting author stacks via article seeds)
+     *
+     * If there is no override, and no Auth-z policy the query is
+     * returned without change.
      *
      * @param Query $query
-     * @param string $stackTableName
-     * @param string $distillerTableName
+     * @param string $stackTableName eg. AuthorStack
+     * @param string $distillerTableName eg. People
      * @param array $options Allow special data injection just in case
      * @return Query
      */
@@ -395,6 +403,32 @@ class StacksTable extends Table
         return $stack . $dist;
     }
 
+    /**
+     * Add any local layer-appropriate filtering to the StackSet contents
+     *
+     * StackEntities are cached with full content. But in some cases you
+     * may want to limit the layer content. Implement the method in
+     * your concrete StackTable to make these adjustments.
+     *
+     * If you are using Authentication/Authorization, are logged in, and
+     * have a StackSetPolicy::scopeLayers written, that policy will receive
+     * the set so you can do any necessary filtering of layer contents
+     *
+     * @param $stackSet StackSet
+     * @return StackSet
+     */
+    protected function localLayerConditions($stackSet)
+    {
+        $identity = Router::getRequest()->getAttribute('identity');
+
+        if (
+            !is_null($identity)
+            && method_exists('\App\Policy\StackSetPolicy', 'scopeLayers')
+        ){
+            $identity->applyScope('layers', $stackSet);
+        }
+        return $stackSet;
+    }
 
     /**
 	 * From mixed seed types, distill to a root ID set
