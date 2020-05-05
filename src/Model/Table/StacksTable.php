@@ -818,4 +818,18 @@ class StacksTable extends Table
             }
         }
     }
+
+    /**
+     * Decide how to send layer data to set()
+     *
+     * @param $value mixed
+     * @return array
+     */
+    protected function _wrap($value)
+    {
+        if (is_object($value)) {
+            $value = [$value];
+        }
+        return $value ?? [];
+    }
 }
