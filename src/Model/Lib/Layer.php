@@ -115,16 +115,6 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
 
     //</editor-fold>
 
-    public function pop()
-    {
-        return count($this->_data) > 0 ? $this->element(0) : null;
-    }
-
-    public function shift()
-    {
-        return count($this->_data) > 0 ? $this->element(count($this->_data) - 1) : null;
-    }
-
     //<editor-fold desc="LayerAccessElementTrait abstract method implementations">
     public function getData()
     {

@@ -24,8 +24,6 @@ trait LayerElementAccessTrait
         return count($this->getData());
     }
 
-
-
     /**
      * Does the primary data or the named layer contain the id'd item?
      *
@@ -91,12 +89,23 @@ trait LayerElementAccessTrait
     }
 
     /**
-     * Convenience wrapper to return the first element
+     * Get the last entity out of storage
      *
-     * @return Entity
+     * @return Entity|null
      */
-    public function shift() {
-        return $this->element(0, LayerCon::LAYERACC_INDEX);
+    public function shift()
+    {
+        return count($this->_data) > 0 ? $this->element(count($this->_data) - 1) : null;
+    }
+
+    /**
+     * Get the first entity out of storage
+     *
+     * @return Entity|null
+     */
+    public function pop()
+    {
+        return count($this->_data) > 0 ? $this->element(0) : null;
     }
 
 }
