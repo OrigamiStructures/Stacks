@@ -86,7 +86,7 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
 
     /**
      * Get the list of layer in these stack entities
-     * 
+     *
      * @return array|string[]
      */
     public function getLayerList()
@@ -211,7 +211,7 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
     public function insertToStackSet($id, $stack) {
         $this->_data[$id] = $stack;
         if (!isset($this->_stackName)) {
-            $this->_stackName = $stack->rootLayerName();
+            $this->_stackName = $stack->getRootLayerName();
             $this->paginatedModel = $this->_modelNameFromKey($this->_stackName);
         }
     }
