@@ -76,6 +76,8 @@ class StacksTable extends Table
      */
 	public $stacks;
 
+	public $map = [];
+
     /**
      * Initialize method
      *
@@ -86,7 +88,11 @@ class StacksTable extends Table
         //Check if proper table is created
         parent::initialize($config);
 		$this->configureStackCache();
-		$this->validateRoot();
+        $this->addStackSchema(array_keys($this->map));
+        $this->mapTables($this->map);
+        $this->addSeedPoint();
+        $this->validateRoot();
+
     }
 
 	/**
@@ -829,8 +835,14 @@ class StacksTable extends Table
         }
     }
 
-    protected function addSeedPoint(array $seedPoints)
+    protected function addSeedPoint(array $seedPoints = [])
     {
+        $seedPoints = collection($this->map)
+            ->reduce(function($accum, $value, $key) {
+                $accum[] = Inflector::singularize($key);
+                $accum[] = Inflector::pluralize($key);
+                return $accum;
+            }, []);
         foreach ($seedPoints as $index => $seedPoint) {
             $methodName = $this->distillMethodName($seedPoint);
             if(method_exists($this, $methodName)){
@@ -856,5 +868,14 @@ class StacksTable extends Table
             $value = [$value];
         }
         return $value ?? [];
+    }
+
+    /**
+     * Set the layer -> base table map
+     * @param array $map
+     */
+    public function setMap(array $map)
+    {
+        $this->map = $map;
     }
 }
