@@ -156,6 +156,31 @@ class StacksTable extends Table
 		return $this->{$this->rootTable};
 	}
 
+    /**
+     * Add the layer-to-db.table connection for cache management
+     *
+     * Later, as the system changes individual records, those records will
+     * be content of some cached stack. We need to be able to look up which
+     * kinds of stacks a specific record might be a member of so we can identify
+     * the caches that must be deleted.
+     *
+     * This method takes adds this stacks layer/table mapping so we can later
+     * know how to check a changed record's id as a possible member of cached data
+     *
+     * @param $map array
+     * @return array
+     */
+    protected function mapTables($map)
+    {
+        /**
+         * If the cache recording the aggregate map is empty then we
+         * go through each class in the Table list and run its mapTables()
+         * to get a full mapping.
+         */
+        //	protected function distillMethodName($seed)
+        return [];
+	}
+
 	/**
 	 * Lazy load the required tables
 	 *
