@@ -2,15 +2,12 @@
 
 namespace Stacks\Model\Lib;
 
-use Stacks\Model\Lib\Layer;
 use Stacks\Exception\MissingPropertyException;
 use Stacks\Interfaces\LayerAccessInterface;
 use Stacks\Interfaces\LayerTaskInterface;
 use BadMethodCallException;
 use Cake\Utility\Inflector;
-use Stacks\Model\Lib\ValueSource;
 use Stacks\Lib\Traits\ErrorRegistryTrait;
-use Stacks\Model\Lib\ValueSourceRegistry;
 use \InvalidArgumentException;
 
 /**
@@ -151,7 +148,7 @@ class LayerAccessArgs implements LayerAccessInterface
     /**
      * Set the sort type
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @param $type int
      * @return $this
      */
