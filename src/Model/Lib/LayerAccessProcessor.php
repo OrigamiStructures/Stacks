@@ -360,44 +360,20 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      */
     protected function performPagination()
     {
-        $x = [
-            'count' => (int) 224,
-            'current' => (int) 10,
-            'perPage' => (int) 10,
-            'page' => (int) 3,
-            'requestedPage' => (int) 3,
-            'pageCount' => (int) 23,
-            'start' => (int) 21,
-            'end' => (int) 30,
-            'prevPage' => true,
-            'nextPage' => true,
-        ];
         $page = $originalPage = $this->AccessArgs->valueOf('page');
         $limit = $this->AccessArgs->valueOf('limit');
         $unchuncked = new Collection($this->ResultIterator);
         $chunked = $unchuncked->chunk($limit)->toArray();
         $chunks = count($chunked);
         $pages = array_keys($chunked);
-        if(isset($chunked[$pages[$page]])) {
+        if(isset($pages[$page-1]) && isset($chunked[$pages[$page-1]])) {
             var_export('yes'.PHP_EOL);
-            $result = $chunked[$pages[$page]];
+            $result = $chunked[$pages[$page-1]];
         } else {
             var_export('pop'.PHP_EOL);
             $page = count($chunked);
             $result = array_pop($chunked);
         }
-        $params = [
-            'count' => $this->ResultIterator->count(),
-            'current' => count($result),
-            'perPage' => $limit,
-            'page' => $pageChange ?? $page,
-            'requestedPage' => 0,
-            'pageCount' => $chunks,
-            'start' => (($page - 1) * $limit) + 1,
-            'end' => (($page - 1) * $limit) + count($result),
-            'prevPage' => $page > 1,
-            'nextPage' => $page < $chunks,
-        ];
         return $result;
     }
 
