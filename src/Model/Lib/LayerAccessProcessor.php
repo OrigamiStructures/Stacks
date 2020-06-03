@@ -371,10 +371,8 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
         $chunked = $unchuncked->chunk($limit)->toArray();
         $pages = array_keys($chunked);
         if(isset($pages[$page-1]) && isset($chunked[$pages[$page-1]])) {
-            var_export('yes'.PHP_EOL);
             $result = $chunked[$pages[$page-1]];
         } else {
-            var_export('pop'.PHP_EOL);
             $result = array_pop($chunked);
         }
         return $result;
