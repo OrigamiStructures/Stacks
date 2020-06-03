@@ -25,6 +25,7 @@ use Cake\Utility\Text;
  * Provide accessor tools to extract contained objects with explicit looping
  *
  * @author Main
+ * @method element($id, bool $LAYERACC_ID)
  */
 class StackEntity extends Entity implements LayerStructureInterface
 {
