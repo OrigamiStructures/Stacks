@@ -46,7 +46,14 @@ class personFactory extends CakephpBaseFactory
         $this->setDefaultData(function(Generator $faker) use ($last_names, &$count) {
             return [
                 'first_name' => $faker->colorName,
-                'last_name' => $last_names[$count++ % 2]
+                'last_name' => $last_names[$count++ % 2],
+                'role' => 'admin',
+                'parent_id' => 1,
+                'old_user_id' => 1,
+                'pronoun' => 'they',
+                'cart_session' => 1,
+                'created' => $faker->dateTime,
+                'modified' => $faker->dateTime,
             ];
         });
     }

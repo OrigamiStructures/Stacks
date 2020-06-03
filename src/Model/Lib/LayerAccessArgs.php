@@ -501,8 +501,8 @@ class LayerAccessArgs implements LayerAccessInterface
      */
     public function setLimit($param)
     {
-        $param = $param === 'all' ? -1 : $param;
-        $param = $param === 'first' ? 1 : $param;
+//        $param = $param === 'all' ? -1 : $param;
+//        $param = $param === 'first' ? 1 : $param;
         $this->_limit = $param;
         return $this->checkOut();
     }

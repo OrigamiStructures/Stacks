@@ -55,6 +55,7 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
     {
         $argObj = (new LayerAccessArgs())
             ->specifyFilter('last_name', 'Holmes');
+        $this->assertTrue($argObj->hasFilter());
         $this->assertCount(5, $this->processor->perform($argObj)->toArray());
     }
 
@@ -63,6 +64,7 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
     {
         $argObj = (new LayerAccessArgs())
             ->specifySort('first_name', SORT_ASC);
+        $this->assertTrue($argObj->hasSort());
         $people = $this->processor->perform($argObj);
         foreach ($people as $key => $person) {
             if($key+1 < 10) {
@@ -73,7 +75,13 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
 
     public function testPerformPagination()
     {
-        $this->markTestIncomplete();
+        $argObj = (new LayerAccessArgs())
+            ->specifyPagination(2, 2);
+        $this->assertTrue($argObj->hasPagination());
+        $page = $this->processor->perform($argObj);
+        var_export(count($page));
+        var_export(is_array($page));
+//        $this->assertCount(5, $this->processor->perform($argObj)->toArray());
     }
 
     public function testPerform()

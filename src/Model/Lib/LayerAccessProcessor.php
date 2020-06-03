@@ -360,40 +360,45 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      */
     protected function performPagination()
     {
-        $page = $this->AccessArgs->valueOf('page');
+        $x = [
+            'count' => (int) 224,
+            'current' => (int) 10,
+            'perPage' => (int) 10,
+            'page' => (int) 3,
+            'requestedPage' => (int) 3,
+            'pageCount' => (int) 23,
+            'start' => (int) 21,
+            'end' => (int) 30,
+            'prevPage' => true,
+            'nextPage' => true,
+        ];
+        $page = $originalPage = $this->AccessArgs->valueOf('page');
         $limit = $this->AccessArgs->valueOf('limit');
         $unchuncked = new Collection($this->ResultIterator);
         $chunked = $unchuncked->chunk($limit)->toArray();
-//        osd($chunked);
-        if(isset($chunked[$page])) {
-            $result = $chunked[$page];
+        $chunks = count($chunked);
+        $pages = array_keys($chunked);
+        if(isset($chunked[$pages[$page]])) {
+            var_export('yes'.PHP_EOL);
+            $result = $chunked[$pages[$page]];
         } else {
+            var_export('pop'.PHP_EOL);
+            $page = count($chunked);
             $result = array_pop($chunked);
         }
+        $params = [
+            'count' => $this->ResultIterator->count(),
+            'current' => count($result),
+            'perPage' => $limit,
+            'page' => $pageChange ?? $page,
+            'requestedPage' => 0,
+            'pageCount' => $chunks,
+            'start' => (($page - 1) * $limit) + 1,
+            'end' => (($page - 1) * $limit) + count($result),
+            'prevPage' => $page > 1,
+            'nextPage' => $page < $chunks,
+        ];
         return $result;
-//        $x = [
-//            'index' => [
-//                'finder' => 'all',
-//                'page' => (int) 1,
-//                'current' => (int) 4,
-//                'count' => (int) 83,
-//                'perPage' => (int) 4,
-//                'start' => (int) 1,
-//                'end' => (int) 4,
-//                'prevPage' => false,
-//                'nextPage' => true,
-//                'pageCount' => (int) 21,
-//                'sort' => 'collector',
-//                'direction' => 'desc',
-//                'limit' => null,
-//                'sortDefault' => 'collector',
-//                'directionDefault' => 'desc',
-//                'scope' => 'index',
-//                'completeSort' => [
-//                    'Identities.collector' => 'desc'
-//                ]
-//            ]
-//        ];
     }
 
     /**
