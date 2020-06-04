@@ -113,7 +113,11 @@ class LayerAccessArgs implements LayerAccessInterface
 
 // <editor-fold defaultstate="collapsed" desc="FILTER PROPERTIES">
 
-    // </editor-fold>
+    private $_filter_value = FALSE;
+    private $_filter_value_isset = FALSE;
+    private $_filter_operator = FALSE;
+
+// </editor-fold>
 
 //<editor-fold desc="SORT VALUES">
     private $_sortDir = FALSE;
@@ -601,6 +605,8 @@ class LayerAccessArgs implements LayerAccessInterface
      */
     public function setFilterValue($param)
     {
+        $this->_filter_value_isset = TRUE;
+        $this->_filter_value = $param;
         if (!$this->valueOf('filterOperator')) {
             if (is_array($param)) {
                 $default_operator = 'in_array';
@@ -627,7 +633,7 @@ class LayerAccessArgs implements LayerAccessInterface
      */
     public function setFilterOperator($param)
     {
-        /*@todo this looks like it's missing code*/
+        $this->_filter_operator = $param;
         return $this->checkOut();
     }
 
