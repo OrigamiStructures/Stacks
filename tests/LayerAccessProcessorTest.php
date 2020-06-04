@@ -56,9 +56,9 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
         $argObj = (new LayerAccessArgs())
             ->specifyFilter('last_name', 'Holmes');
         $this->assertTrue($argObj->hasFilter());
-        $this->assertCount(5, $this->processor->perform($argObj)->toArray());
+        $this->assertCount(5, $this->processor->perform($argObj)->toArray(),
+            'Filtering did not produce the expected result size');
     }
-
 
     public function testPerformSort()
     {
@@ -68,7 +68,8 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
         $people = $this->processor->perform($argObj);
         foreach ($people as $key => $person) {
             if($key+1 < 10) {
-                $this->assertTrue($person->first_name <= $people[$key+1]->first_name);
+                $this->assertTrue($person->first_name <= $people[$key+1]->first_name,
+                    'Sorting did not produce the expected ascending order of strings');
             }
         }
     }
@@ -79,13 +80,35 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
             ->specifyPagination(2, 2);
         $this->assertTrue($argObj->hasPagination());
         $page = $this->processor->perform($argObj);
-        var_export(count($page));
-        var_export(is_array($page));
-//        $this->assertCount(5, $this->processor->perform($argObj)->toArray());
+        $this->assertCount(2, $page,
+            'Pagination did not retun the expected number records in a page');
     }
 
     public function testPerform()
     {
-        $this->markTestIncomplete();
+        $argObj = (new LayerAccessArgs())
+            ->specifyFilter('last_name', 'Watson')
+            ->specifySort('first_name', SORT_ASC)
+            ->specifyPagination(1, 3);
+        $this->assertTrue($argObj->hasFilter(),
+            'Filter did not set properly');
+        $this->assertTrue($argObj->hasPagination(),
+            'Pagination did not set properly');
+        $this->assertTrue($argObj->hasSort(),
+            'Sort did not set propery');
+
+        $people = $this->processor->perform($argObj);
+
+        $this->assertCount(3, $people,
+            '\'perform\' did not paginate to the expected number of records');
+        foreach ($people as $key => $person) {
+            if($key+1 < 3) {
+                $this->assertTrue($person->last_name === 'Watson',
+                    '\'perform()\' properly filter the records');
+                $this->assertTrue($person->first_name <= $people[$key+1]->first_name,
+                    'The sort order after \'perform()\' is not correct');
+            }
+        }
+
     }
 }
