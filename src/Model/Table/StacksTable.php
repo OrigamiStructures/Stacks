@@ -4,6 +4,7 @@ namespace Stacks\Model\Table;
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\Utility\Inflector;
 use Cake\Routing\Router;
+use Stacks\Constants\CacheCon;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\BadClassConfigurationException;
 use Stacks\Exception\StackRegistryException;
@@ -922,9 +923,32 @@ class StacksTable extends Table
         $this->map = $map;
     }
 
+    /**
+     * Create a portion of the layer map
+     *
+     * Using the map property in this concrete instantiation
+     * of the StacksTable, create a portion of the map of concrete
+     * table entities to layer names in all stack tables
+     *
+     *         $map = [
+     *          'concreteTableName' => [
+     *              'stackTableName' => [
+     *                  'layerName',
+     *                  'layerName'
+     *                  ],
+     *              'stackTableName' => [
+     *                  'layerName',
+     *                  'layerName'
+     *                  ]
+     *              ],
+     *          'concreteTableName'
+     *          ];
+     *
+     *
+     */
     public function compileLayerMapFragment()
     {
-        $cache = Cache::read('stack_plugin_layer_map', '_cake_core_') ?? [];
+        $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
         osd("Before:");
         osd($cache);
         $cache = collection($this->map)
@@ -932,24 +956,9 @@ class StacksTable extends Table
                 $current = Hash::get($accum,"$concreteTableName.$this->_alias") ?? [];
                 return Hash::insert($accum,"$concreteTableName.$this->_alias." . count($current), $layerName);
             },$cache);
-        Cache::write('stack_plugin_layer_map', $cache,'_cake_core_');
+        Cache::write(CacheCon::SCKEY, $cache,CacheCon::SCCONFIG);
         osd("After:");
-        $cache = Cache::read('stack_plugin_layer_map', '_cake_core_') ?? [];
+        $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
         osd($cache);
-
-        $map = [
-            'concreteTableName' => [
-                'stackTableName' => [
-                    'layerName',
-                    'layerName'
-                ],
-                'stackTableName' => [
-                    'layerName',
-                    'layerName'
-                ]
-            ],
-            'concreteTableName'
-        ];
-
     }
 }
