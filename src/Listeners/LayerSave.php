@@ -5,6 +5,7 @@ namespace Stacks\Listeners;
 
 
 use Cake\Event\Event;
+use Cake\Filesystem\Folder;
 use DebugKit\Model\Table\PanelsTable;
 
 class LayerSave implements \Cake\Event\EventListenerInterface
@@ -16,7 +17,7 @@ class LayerSave implements \Cake\Event\EventListenerInterface
     public function implementedEvents(): array
     {
         $eventMap = [
-            'Model.afterSave' => 'afterSave',
+//            'Model.afterSave' => 'afterSave',
             'Model.afterSaveCommit' => 'afterSaveCommit',
         ];
         return $eventMap;
@@ -49,8 +50,15 @@ class LayerSave implements \Cake\Event\EventListenerInterface
 //            osd($event);
             osd($entity);
             osd($options);
+            $this->getStackTableList();
 //            die;
         }
+    }
+
+    public function getStackTableList()
+    {
+        $tableDir = new Folder(APP.'Model'.DS.'Table');
+        osd($tableDir->find('/(.*)StackTable/'));
     }
 
 }

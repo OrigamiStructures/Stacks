@@ -921,4 +921,35 @@ class StacksTable extends Table
     {
         $this->map = $map;
     }
+
+    public function compileLayerMapFragment()
+    {
+        $cache = Cache::read('stack_plugin_layer_map', '_cake_core_') ?? [];
+        osd("Before:");
+        osd($cache);
+        $cache = collection($this->map)
+            ->reduce(function($accum, $concreteTableName, $layerName){
+                return Hash::insert($accum,"$concreteTableName.$this->_alias", $layerName);
+//                return $accum;
+            },$cache);
+        Cache::write('stack_plugin_layer_map', $cache,'_cake_core_');
+        osd("After:");
+        $cache = Cache::read('stack_plugin_layer_map', '_cake_core_') ?? [];
+        osd($cache);
+
+        $map = [
+            'concreteTableName' => [
+                'stackTableName' => [
+                    'layerName',
+                    'layerName'
+                ],
+                'stackTableName' => [
+                    'layerName',
+                    'layerName'
+                ]
+            ],
+            'concreteTableName'
+        ];
+
+    }
 }
