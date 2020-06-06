@@ -987,6 +987,7 @@ class StacksTable extends Table
      */
     public function deleteCache($id)
     {
+        osd($id, "the id passed to deleteCache");
         Cache::delete($this->cacheKey($id), $this->cacheName());
     }
 }
