@@ -37,17 +37,11 @@ class LayerSave implements \Cake\Event\EventListenerInterface
     public function afterSaveCommit($event, $entity, $options)
     {
         if (! in_array($event->getSubject()->getAlias(), ['Panels', 'Requests', 'Preferences'])) {
-            osd('COMMIT!');
-//            osd($event);
-//            osd($entity);
             $map = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
             $table = $entity->getSource();
-//            osd($table);
-            osd(Hash::get($map, strtolower($table)));
             foreach (Hash::get($map, strtolower($table)) as $stackName => $layerNames) {
                 $this->expireStackCaches($stackName, $entity->id, $layerNames);
             }
-            die;
         }
     }
 
@@ -71,10 +65,7 @@ class LayerSave implements \Cake\Event\EventListenerInterface
          */
         $stackTable = TableRegistry::getTableLocator()->get($stackName);
         foreach ($layerNames as $layerName) {
-            osd($layerName, "layer name");
-            osd($stackTable->distillFromGivenSeed($layerName, [$id])->toArray(), "distill from given seed");
             foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
-                osd($entity->id);
                 $stackTable->deleteCache($entity->id);
             }
         }
