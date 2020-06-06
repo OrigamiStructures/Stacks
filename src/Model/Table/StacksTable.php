@@ -945,20 +945,48 @@ class StacksTable extends Table
      *          ];
      *
      *
+     * @throws \Exception
      */
     public function compileLayerMapFragment()
     {
-        $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
-        osd("Before:");
-        osd($cache);
-        $cache = collection($this->map)
-            ->reduce(function($accum, $concreteTableName, $layerName){
-                $current = Hash::get($accum,"$concreteTableName.$this->_alias") ?? [];
-                return Hash::insert($accum,"$concreteTableName.$this->_alias." . count($current), $layerName);
-            },$cache);
-        Cache::write(CacheCon::SCKEY, $cache,CacheCon::SCCONFIG);
-        osd("After:");
-        $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
-        osd($cache);
+        try {
+            $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
+            $cache = collection($this->map)
+                ->reduce(function ($accum, $concreteTableName, $layerName) {
+                    $current = Hash::get($accum, "$concreteTableName.$this->_alias") ?? [];
+                    return Hash::insert($accum, "$concreteTableName.$this->_alias." . count($current), $layerName);
+                }, $cache);
+            Cache::write(CacheCon::SCKEY, $cache, CacheCon::SCCONFIG);
+        } catch (\Exception $e) {
+            $msg = "The stack table map cache write did not work";
+            throw new \Exception($msg);
+        }
+    }
+
+    /**
+     * Distill stack ids from given seed
+     *
+     * Given a named seed and a specific layer id
+     * return an array of the stacks that contain this layer
+     *
+     * @param $seed string
+     * @param $id array
+     * @return array
+     */
+    public function distillFromGivenSeed(string $seed, array $id)
+    {
+        $method = $this->distillMethodName($seed);
+        $stackRootIds = $this->$method($id);
+        return $stackRootIds;
+    }
+
+    /**
+     * Delete a specific cache based upon id
+     *
+     * @param $id
+     */
+    public function deleteCache($id)
+    {
+        Cache::delete($this->cacheKey($id), $this->cacheName());
     }
 }
