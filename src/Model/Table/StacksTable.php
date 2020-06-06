@@ -929,8 +929,8 @@ class StacksTable extends Table
         osd($cache);
         $cache = collection($this->map)
             ->reduce(function($accum, $concreteTableName, $layerName){
-                return Hash::insert($accum,"$concreteTableName.$this->_alias", $layerName);
-//                return $accum;
+                $current = Hash::get($accum,"$concreteTableName.$this->_alias") ?? [];
+                return Hash::insert($accum,"$concreteTableName.$this->_alias." . count($current), $layerName);
             },$cache);
         Cache::write('stack_plugin_layer_map', $cache,'_cake_core_');
         osd("After:");
