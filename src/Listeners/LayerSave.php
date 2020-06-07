@@ -72,10 +72,40 @@ class LayerSave implements \Cake\Event\EventListenerInterface
 {
 
     /**
-     * First we need to make sure the listener is listening.
+     * Sidebar: Cake Events have requirements; regiter these event listeners.
      *
      * Application.php will register this listener so it'll
      * be on all the time.
+     *
+     * Model.afterSaveCommit is the workhorse that is integrated into the Cake ORM.
+     * It will run on every top-level entity save. Meaning any individual associated
+     * entities will be ignored because we only consider the parent significant
+     * That is among the limitations and assumptions of this listener.
+     *
+     * Another limitation is that there is no way to know what alias an entity (or its
+     * controlling table) is going by when the save happens. This makes the identity
+     * of the table that triggers this event hazy.
+     *
+     * Combine this with the reality that the layer data stored in stacks also lives
+     * under an alias and only our developer-defined table-value in the map
+     * identifies its origin and a picture of uncertainty emerges.
+     *
+     * These are the two sides of the equation that we're trying to match up via
+     * our map. Neither has an immutable identity in our code. So our goal is
+     * to always have the base table name be used. We design the map fragments in
+     * each concrete stack table this way, and we design our forms to work this way.
+     *
+     * We 'simply' have to coordinate these facts to guarantee the needed match is always
+     * made and the caches always expire. But the stakes are high. A missed match is
+     * a big deal!
+     * @todo Can we have 'never matched' events alert the developer by log or email?
+     * @todo It might be possible to read the Model\Table classes and build an inheritance
+     *    map for them
+     *
+     * We have a backup plan though. Again, it depends on developer attentiveness.
+     * The Stacks.directCacheExpiry action can be called by any code. That will allow
+     * logic that back-fills cache expirtation in cases where some associated data needs
+     * examination.
      *
      * @inheritDoc
      */
@@ -83,26 +113,69 @@ class LayerSave implements \Cake\Event\EventListenerInterface
     {
         $eventMap = [
             'Model.afterSaveCommit' => 'afterSaveCommit',
+            'Stack.directCacheExpiry' => 'directCacheExpiry'
         ];
         return $eventMap;
     }
 
-
+    /**
+     * Another sidebar: The process to make the lookup map
+     *
+     * When no mapping of table classes to their layer manifestation in the stacks
+     * exists, we have to go on a scavenger hunt to collect all the required information.
+     *
+     * We make the assumption that all concrete stack table classes will be stored in the
+     * application's Model\Table namespace and that they will be named according to our
+     * convention 'concreteName'StackTable.php
+     *
+     * Based on these assumptions we derive all the class names from the directory contents,
+     * instantiate each class in turn and have them run a method that adds their
+     * layer-to-table map to a collection point; a cache file stored in the app's
+     * cache/persitent directory (1 year expiration).
+     *
+     * WARNING OH WISE DEVELOPER
+     * If any stack table schemas are changed, or new ones created, you'de better run over
+     * to that cache directory and kill the old cache file or cache expiration will become
+     * unreliable and unpredictable bad data will result!!
+     *
+     * @return array
+     */
+    protected function compileLayerMap()
+    {
+        $tableDir = new Folder(APP.'Model'.DS.'Table');
+        $stackTableList = ($tableDir->find('(.*)StackTable.php'));
+        $classList = collection($stackTableList)
+            ->map(function ($filename){
+                $alias = str_replace('Table.php', '', $filename);
+                TableRegistry::getTableLocator()->get($alias)->compileLayerMapFragment();
+                TableRegistry::getTableLocator()->remove($alias);
+            })->toArray();
+        return Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG);
+    }
 
     /**
      * And here is our ear-to-the-ground
      *
      * There are a few save activities that don't have anything to do with
-     * Stack Table though so we need a guard to filter out the noise.
+     * Stack Table, so we need a guard to filter out the noise.
      *
-     * Then, We read the cached map that links tables to their various layer incarnations.
-     * If the cache isn't available, we'll take a little detour to construct it.
+     * Then, we read the map-of-legend from long-term storage. And, as previously mentioned
+     * if the cache isn't available... pay no attention to the man behind the curtain.
      *
      * At this point, we have the entity that changed (where we can read the id of the record),
      * the name of the table responsible for the entity, and the map with table names as the
      * first level key. It's a simple matter then to get the sub-map describing the role
-     * of this table in the currently configured stacks
-     * 
+     * of this table in the currently configured stacks.
+     *
+     * And that's exactly what we do; when we pull the map node named by the acting table we'll
+     * have a new array with the names of potentially impacted stack tables. We walk through
+     * these in a loop, each step will list all the layers in a given stack table which
+     * this acting table populates.
+     *
+     * This new data, stackTable name, modified entity id, and list of layers containing
+     * this class of data, is all sent out for the final task, to discover what specific
+     * stacks this data expire their caches.
+     *
      * @param $event Event
      * @param $entity Entity
      * @param $options
@@ -119,19 +192,20 @@ class LayerSave implements \Cake\Event\EventListenerInterface
         }
     }
 
-    protected function compileLayerMap()
-    {
-        $tableDir = new Folder(APP.'Model'.DS.'Table');
-        $stackTableList = ($tableDir->find('(.*)StackTable.php'));
-        $classList = collection($stackTableList)
-            ->map(function ($filename){
-                $alias = str_replace('Table.php', '', $filename);
-                TableRegistry::getTableLocator()->get($alias)->compileLayerMapFragment();
-                TableRegistry::getTableLocator()->remove($alias);
-            })->toArray();
-        return Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG);
-    }
     /**
+     * Jack-the-cache-killer: where the true magic of StackTable distillers is revealed!
+     *
+     * Stack tables are designed with one distiller for each layer type they contain.
+     * The distillers accept an array of layer record ids and will return the ids of all
+     * the stack records of the a concrete type that would contain any of the seeds.
+     *
+     * Normally, these distillers are used to start the process of building requested
+     * stacks. But in this process, we capture the set of root ids and use them as
+     * keys to locate and delete cached copies of the stacks so they can be remade with
+     * our newly modified data next time the stack is requested.
+     *
+     * This was the point of the whole exercise! Mission accomplished.
+     *
      * @param $stackName string
      * @param $id int|string
      * @param $layerNames array
@@ -149,5 +223,31 @@ class LayerSave implements \Cake\Event\EventListenerInterface
         }
     }
 
+    /**
+     * Expire stack caches that include or should include this record
+     *
+     * This event relies on direct values rather than tricky deduction and
+     * is a fallback against the limitations of the main afterSaveCommit event.
+     * It allows for manual triggering when needed.
+     *
+     * Simple create an array that carries the id of a potential stack-participant
+     * and the name of the table class the record belongs to and send it
+     * on your event like this:
+     *
+     *    $data = ['id' => $id, 'table' = $alias]
+     *
+     *    $event = new Event('Stack.directCacheExpiry', $this, $data);
+     *    $this->getEventManager()->dispatch($event);
+     *
+     * @param $event Event
+     * @param $object object the object from which this event was triggered
+     * @param $data array ['id' => $id, 'table' = $alias]
+     */
+    public function directCacheExpiry($event, $object, $data) {
+        $map = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
+        foreach (Hash::get($map, $data['table']) as $stackName => $layerNames) {
+            $this->expireStackCaches($stackName, $data['id'], $layerNames);
+        }
+    }
 
 }
