@@ -204,7 +204,14 @@ class LayerSave implements \Cake\Event\EventListenerInterface
      * keys to locate and delete cached copies of the stacks so they can be remade with
      * our newly modified data next time the stack is requested.
      *
-     * This was the point of the whole exercise! Mission accomplished.
+     * This was the point of the whole exercise! Mission accomplished.k
+     *
+     * Since both the stack cache configuration and the tools to access it are dynamic
+     * features of the stack tables, we need to instantiate each table and delegate
+     * work to them.
+     *
+     * There may be a lot of tables, so we take a little care with the cache registry
+     * to insure that any objects that get created just for this use get cleaned up afterwards.
      *
      * @param $stackName string
      * @param $id int|string
@@ -215,11 +222,15 @@ class LayerSave implements \Cake\Event\EventListenerInterface
         /**
          * @var StacksTable $stackTable
          */
+        $preExisting = TableRegistry::getTableLocator()->exists($stackName);
         $stackTable = TableRegistry::getTableLocator()->get($stackName);
         foreach ($layerNames as $layerName) {
             foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
                 $stackTable->deleteCache($entity->id);
             }
+        }
+        if (!$preExisting) {
+            TableRegistry::getTableLocator()->remove($stackName);
         }
     }
 
