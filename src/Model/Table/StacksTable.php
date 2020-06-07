@@ -971,13 +971,12 @@ class StacksTable extends Table
      *
      * @param $seed string
      * @param $id array
-     * @return array
+     * @return Query
      */
     public function distillFromGivenSeed(string $seed, array $id)
     {
         $method = $this->distillMethodName($seed);
-        $stackRootIds = $this->$method($id);
-        return $stackRootIds;
+        return $this->$method($id);
     }
 
     /**
