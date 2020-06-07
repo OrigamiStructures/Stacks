@@ -4,11 +4,11 @@ namespace Stacks\Listeners;
 
 use Cake\Cache\Cache;
 use Cake\Event\Event;
+use Cake\Event\EventListenerInterface;
 use Cake\Filesystem\Folder;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
-use DebugKit\Model\Table\PanelsTable;
 use Stacks\Constants\CacheCon;
 use Stacks\Model\Table\StacksTable;
 use function collection;
@@ -68,7 +68,7 @@ use function collection;
  *
  * @package Stacks\Listeners
  */
-class LayerSave implements \Cake\Event\EventListenerInterface
+class LayerSave implements EventListenerInterface
 {
 
     /**
@@ -111,11 +111,10 @@ class LayerSave implements \Cake\Event\EventListenerInterface
      */
     public function implementedEvents(): array
     {
-        $eventMap = [
+        return [
             'Model.afterSaveCommit' => 'afterSaveCommit',
             'Stack.directCacheExpiry' => 'directCacheExpiry'
         ];
-        return $eventMap;
     }
 
     /**
@@ -144,10 +143,12 @@ class LayerSave implements \Cake\Event\EventListenerInterface
     {
         $tableDir = new Folder(APP.'Model'.DS.'Table');
         $stackTableList = ($tableDir->find('(.*)StackTable.php'));
-        $classList = collection($stackTableList)
+        collection($stackTableList)
             ->map(function ($filename){
                 $alias = str_replace('Table.php', '', $filename);
-                TableRegistry::getTableLocator()->get($alias)->compileLayerMapFragment();
+                $table = TableRegistry::getTableLocator()->get($alias);
+                /* @var StacksTable $table */
+                $table->compileLayerMapFragment();
                 TableRegistry::getTableLocator()->remove($alias);
             })->toArray();
         return Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG);
@@ -180,6 +181,7 @@ class LayerSave implements \Cake\Event\EventListenerInterface
      * @param $entity Entity
      * @param $options
      * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public function afterSaveCommit($event, $entity, $options)
     {
@@ -253,6 +255,8 @@ class LayerSave implements \Cake\Event\EventListenerInterface
      * @param $event Event
      * @param $object object the object from which this event was triggered
      * @param $data array ['id' => $id, 'table' = $alias]
+     * @noinspection PhpUnused
+     * @noinspection PhpUnusedParameterInspection
      */
     public function directCacheExpiry($event, $object, $data) {
         $map = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
