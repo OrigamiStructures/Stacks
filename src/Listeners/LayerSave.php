@@ -3,13 +3,16 @@
 namespace Stacks\Listeners;
 
 use App\Lib\Introspection;
+use App\Model\Entity\UserIdentity;
 use Cake\Cache\Cache;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
 use Cake\Filesystem\Folder;
 use Cake\I18n\Time;
+use Cake\Log\Log;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
+use Cake\Routing\Router;
 use Cake\Utility\Hash;
 use Stacks\Constants\CacheCon;
 use Stacks\Model\Table\StacksTable;
@@ -72,6 +75,12 @@ use function collection;
  */
 class LayerSave implements EventListenerInterface
 {
+
+    /**
+     * @var array
+     */
+    public $logResult = [];
+
 
     /**
      * Sidebar: Cake Events have requirements; regiter these event listeners.
@@ -194,9 +203,11 @@ class LayerSave implements EventListenerInterface
         if (! in_array($event->getSubject()->getAlias(), ['Panels', 'Requests', 'Preferences'])) {
             $map = $this->getParticipationMap();
             $table = $entity->getSource();
+            $this->logResult = [];
             foreach (Hash::get($map, strtolower($table)) ?? [] as $stackName => $layerNames) {
                 $this->expireStackCaches($stackName, $entity->id, $layerNames);
             }
+            $this->writeResultLog($table, $entity->id);
         }
     }
 
@@ -234,16 +245,12 @@ class LayerSave implements EventListenerInterface
         $stackTable = TableRegistry::getTableLocator()->get($stackName);
         foreach ($layerNames as $layerName) {
             foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
-            $logResult = [];
                     $result = $stackTable->deleteCache($entity->id);
-                    $logResult["$stackName.$layerName.$id"] = $result ? 'success' ? 'error';
+                    $this->logResult[] = $result . "{$stackName}[{$entity->id}] expired on change to {$layerName}[{$id}]";
             }
         }
         if (!$preExisting) {
             TableRegistry::getTableLocator()->remove($stackName);
-            /**
-             * process the logResult array and log the result
-             */
         }
     }
 
@@ -272,9 +279,32 @@ class LayerSave implements EventListenerInterface
     public function directCacheExpiry($event, $object, $data) {
         $data = $event->getData();
         $map = $this->getParticipationMap();
+        $this->logResult = [];
         foreach (Hash::get($map, strtolower($data['table'])) ?? [] as $stackName => $layerNames) {
             $this->expireStackCaches($stackName, $data['id'], $layerNames);
         }
+        $this->writeResultLog($data['table'], $data['id']);
+    }
+
+    protected function writeResultLog($triggerTable, $triggerId)
+    {
+        $request = Router::getRequest();
+        $identity = $request->getAttribute('identity');
+        /* @var UserIdentity $identity */
+        $name = $identity->getPerson('first_name') . ' ' . $identity->getPerson('last_name');
+        $trigger = "{$triggerTable}[{$triggerId}]";
+        $controller = $request->getParam('controller');
+        $action = $request->getParam('action');
+        $header = "$name modified $trigger." . PHP_EOL . "Cache management was triggered through $controller/$action";
+
+        if (empty($this->logResult)) {
+            $this->logResult = ['No mappings found'];
+        }
+        array_unshift($this->logResult, $header);
+        Log::write(
+            'info',
+            implode(PHP_EOL, $this->logResult) . PHP_EOL,
+            'stack_cache_expiry');
     }
 
     public function getParticipationMap()
