@@ -2,10 +2,12 @@
 
 namespace Stacks\Listeners;
 
+use App\Lib\Introspection;
 use Cake\Cache\Cache;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
 use Cake\Filesystem\Folder;
+use Cake\I18n\Time;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
@@ -141,8 +143,12 @@ class LayerSave implements EventListenerInterface
      */
     protected function compileLayerMap()
     {
-        $tableDir = new Folder(APP.'Model'.DS.'Table');
-        $stackTableList = ($tableDir->find('(.*)StackTable.php'));
+        $stackTableList = Introspection::stackTables();
+        Cache::write(
+            CacheCon::SCKEY,
+            ['Map Created' => 'Map Created: ' . Time::now()->toDateTimeString()],
+            CacheCon::SCCONFIG
+        );
         collection($stackTableList)
             ->map(function ($filename){
                 $alias = str_replace('Table.php', '', $filename);
@@ -186,9 +192,9 @@ class LayerSave implements EventListenerInterface
     public function afterSaveCommit($event, $entity, $options)
     {
         if (! in_array($event->getSubject()->getAlias(), ['Panels', 'Requests', 'Preferences'])) {
-            $map = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
+            $map = $this->getParticipationMap();
             $table = $entity->getSource();
-            foreach (Hash::get($map, strtolower($table)) as $stackName => $layerNames) {
+            foreach (Hash::get($map, strtolower($table)) ?? [] as $stackName => $layerNames) {
                 $this->expireStackCaches($stackName, $entity->id, $layerNames);
             }
         }
@@ -259,10 +265,21 @@ class LayerSave implements EventListenerInterface
      * @noinspection PhpUnusedParameterInspection
      */
     public function directCacheExpiry($event, $object, $data) {
-        $map = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
-        foreach (Hash::get($map, $data['table']) as $stackName => $layerNames) {
+        $data = $event->getData();
+        $map = $this->getParticipationMap();
+        foreach (Hash::get($map, strtolower($data['table'])) ?? [] as $stackName => $layerNames) {
             $this->expireStackCaches($stackName, $data['id'], $layerNames);
         }
+    }
+
+    public function getParticipationMap()
+    {
+        return Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? $this->compileLayerMap();
+    }
+
+    public function deleteParticipationMap()
+    {
+        return Cache::delete(CacheCon::SCKEY, CacheCon::SCCONFIG);
     }
 
 }
