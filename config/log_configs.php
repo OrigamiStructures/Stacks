@@ -10,9 +10,9 @@ return [
         'stack_cache_expiry' => [
             'className' => FileLog::class,
             'path' => LOGS . 'stack_cache_expiry' . DS,
-            'file' => 'events'.date('.Y.m.') . 'week' . date('W'),
+            'file' => 'events'.date('.Y.m.') . 'week' . date('W') . '.log',
 //            'url' => env('LOG_DEBUG_URL', null),
-            'scopes' => false,
+//            'scopes' => false,
             'levels' => ['info'],
         ],
     ],
