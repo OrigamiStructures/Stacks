@@ -2,6 +2,8 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
+use Cake\Filesystem\File;
+use Cake\Filesystem\Folder;
 use Cake\Utility\Inflector;
 use Cake\Routing\Router;
 use Stacks\Constants\CacheCon;
@@ -986,7 +988,17 @@ class StacksTable extends Table
      */
     public function deleteCache($id)
     {
-        osd($id, "the id passed to deleteCache");
-        Cache::delete($this->cacheKey($id), $this->cacheName());
+        $folder = new Folder(Cache::getConfig($this->cacheName())['path']);
+        $file = $folder->find(Cache::getConfig($this->cacheName())['prefix'] . $this->cacheKey($id));
+        if (empty($file)) {
+            $result = 'None found: ';
+        }
+        else {
+            $result = Cache::delete($this->cacheKey($id), $this->cacheName())
+                ? 'Expired: '
+                : 'ERROR'
+                ;
+        }
+        return $result;
     }
 }
