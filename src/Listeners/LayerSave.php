@@ -234,11 +234,16 @@ class LayerSave implements EventListenerInterface
         $stackTable = TableRegistry::getTableLocator()->get($stackName);
         foreach ($layerNames as $layerName) {
             foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
-                $stackTable->deleteCache($entity->id);
+            $logResult = [];
+                    $result = $stackTable->deleteCache($entity->id);
+                    $logResult["$stackName.$layerName.$id"] = $result ? 'success' ? 'error';
             }
         }
         if (!$preExisting) {
             TableRegistry::getTableLocator()->remove($stackName);
+            /**
+             * process the logResult array and log the result
+             */
         }
     }
 
