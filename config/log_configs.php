@@ -1,7 +1,6 @@
 <?php
 use Cake\Log\Engine\FileLog;
 
-var_export('events'.date('.Y.m.W'));
 return [
     /*
  * Configures logging options
