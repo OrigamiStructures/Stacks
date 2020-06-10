@@ -321,8 +321,6 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
             $keys = array_keys($entities);
             $sampleData = $entities[$keys[0]];
             if (!is_object($sampleData) || !($sampleData instanceof \Cake\ORM\Entity)) {
-                $badClass = get_class($sampleData);
-                ;
                 $message = 'StackLayer class can only accept objects that '
                     . 'extend Entity. The first object in the array is a $badClass '
                     . 'and does not extend Cake\ORM\Entity.';
