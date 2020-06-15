@@ -2,6 +2,7 @@
 
 namespace Stacks\Model\Entity;
 
+use Cake\Utility\Inflector;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\UnknownLayerException;
 use Stacks\Interfaces\LayerStructureInterface;
@@ -114,7 +115,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     //<editor-fold desc="Introspection">
 
     /**
-     * Get this primary id or the IDs of all the entities in a layer
+     * As an array, get this primary id or the IDs of all the entities in a layer
      *
      * @param string $layer
      * @return array
@@ -127,6 +128,17 @@ class StackEntity extends Entity implements LayerStructureInterface
             $result = $this->getLayer($layer)->toDistinctList('id');
         }
         return $result;
+    }
+
+    /**
+     * As a value, get the id of a layer record or the first id if more than 1 record
+     *
+     * @param null $layer
+     * @return int|string
+     */
+    public function ID($layer = null) {
+        $result = $this->IDs($layer);
+        return array_pop($result);
     }
 
     /**
