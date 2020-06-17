@@ -110,6 +110,8 @@ class LayerSave implements EventListenerInterface
      * made and the caches always expire. But the stakes are high. A missed match is
      * a big deal!
      * @todo Can we have 'never matched' events alert the developer by log or email?
+     *    I have at least put more text in the never-matched to ask if the Root Table
+     *    was used (as this turned out to be an obscure bug)
      * @todo It might be possible to read the Model\Table classes and build an inheritance
      *    map for them
      *
@@ -298,7 +300,7 @@ class LayerSave implements EventListenerInterface
         $header = "$name modified $trigger." . PHP_EOL . "Cache management was triggered through $controller/$action";
 
         if (empty($this->logResult)) {
-            $this->logResult = ['No mappings found'];
+            $this->logResult = ['No mappings found. Did you save on a root table?'];
         }
         array_unshift($this->logResult, $header);
         Log::write(
