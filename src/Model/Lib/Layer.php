@@ -247,7 +247,7 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
      * @todo This may not be appropriate. Make this immutable and handle edits in
      *      different structures external to this object? The entities can easily
      *      be taken out and put in a different object (except they are then
-     *      references). But then again, when we emit arrays, they are references to
+     *      references). But then again, when we emitNested arrays, they are references to
      *      these contained objects and so, might change
      *
      * @return boolean
