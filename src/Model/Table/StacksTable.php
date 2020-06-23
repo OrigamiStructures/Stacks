@@ -2,6 +2,7 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
+use Cake\Datasource\EntityInterface;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Inflector;
@@ -1000,5 +1001,19 @@ class StacksTable extends Table
                 ;
         }
         return $result;
+    }
+
+    /**
+     * This creates a new entity object.
+     *
+     * Careful: This does not trigger any field validation.
+     * This entity can be persisted without validation error as empty record.
+     * Always patch in required fields before saving.
+     *
+     * @return \Cake\Datasource\EntityInterface
+     */
+    public function newEmptyEntity(): EntityInterface
+    {
+        // TODO: Implement newEmptyEntity() method.
     }
 }
