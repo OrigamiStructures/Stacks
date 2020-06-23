@@ -2,6 +2,7 @@
 
 namespace Stacks\Model\Entity;
 
+use Cake\Utility\Inflector;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\UnknownLayerException;
 use Stacks\Interfaces\LayerStructureInterface;
@@ -25,6 +26,7 @@ use Cake\Utility\Text;
  * Provide accessor tools to extract contained objects with explicit looping
  *
  * @author Main
+ * @method element($id, bool $LAYERACC_ID)
  */
 class StackEntity extends Entity implements LayerStructureInterface
 {
@@ -113,7 +115,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     //<editor-fold desc="Introspection">
 
     /**
-     * Get this primary id or the IDs of all the entities in a layer
+     * As an array, get this primary id or the IDs of all the entities in a layer
      *
      * @param string $layer
      * @return array
@@ -126,6 +128,17 @@ class StackEntity extends Entity implements LayerStructureInterface
             $result = $this->getLayer($layer)->toDistinctList('id');
         }
         return $result;
+    }
+
+    /**
+     * As a value, get the id of a layer record or the first id if more than 1 record
+     *
+     * @param null $layer
+     * @return int|string
+     */
+    public function ID($layer = null) {
+        $result = $this->IDs($layer);
+        return array_pop($result);
     }
 
     /**
@@ -146,7 +159,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     public function isEmpty(string $field): bool
     {
         if (is_null($field)) {
-            $field = $this->rootLayerName();
+            $field = $this->getRootLayerName();
         }
         $value = $this->get($field);
         if (is_object($value)
@@ -198,6 +211,31 @@ class StackEntity extends Entity implements LayerStructureInterface
         return $this->count($layer) === 0;
     }
 
+    /**
+     * Gets the list of visible fields.
+     *
+     * The list of visible fields is all standard fields
+     * plus virtual fields minus hidden fields.
+     *
+     * @return string[] A list of fields that are 'visible' in all
+     *     representations.
+     */
+    public function getVisible(): array
+    {
+        return array_diff(parent::getVisible(), ['rootName', 'rootDisplaySource']);
+    }
+
+    /**
+     * Get the list of layer in these stack entities
+     *
+     * @return array|string[]
+     */
+    public function getLayerList()
+    {
+        return $this->getVisible();
+    }
+
+
     public function hasLayer($layer)
     {
         return $this->count($layer) > 0;
@@ -226,8 +264,18 @@ class StackEntity extends Entity implements LayerStructureInterface
      */
     public function rootElement($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
-        $result = $this->{$this->rootLayerName()}->toArray();
+        $result = $this->{$this->getRootLayerName()}->toArray();
         return $this->_resolveWrapper($result, $unwrap);
+    }
+
+    /**
+     * Is this StackEntity empty?
+     *
+     * @return bool
+     */
+    public function isEmptyStack()
+    {
+        return count($this->rootElement(LayerCon::LAYERACC_WRAP)) == 0;
     }
 
     public function setRoot($layer)
@@ -252,7 +300,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      */
     public function rootID($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
-        $result = $this->{$this->rootLayerName()}->IDs();
+        $result = $this->{$this->getRootLayerName()}->IDs();
         return $this->_resolveWrapper($result, $unwrap);
     }
 
@@ -267,7 +315,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     public function rootDisplayValue($unwrap = LayerCon::LAYERACC_UNWRAP)
     {
         /* @var Layer $rootLayer */
-        $rootLayer = layer($this->rootElement(LayerCon::LAYERACC_WRAP));
+        $rootLayer = new Layer($this->rootElement(LayerCon::LAYERACC_WRAP));
         $title = $rootLayer->toValueList($this->rootDisplaySource());
         return array_shift($title);
 //        osd($rootLayer);
@@ -301,7 +349,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      *
      * @return string
      */
-    public function rootLayerName()
+    public function getRootLayerName()
     {
         if ($this->get('rootName') === FALSE) {
             throw new BadClassConfigurationException(
@@ -342,7 +390,7 @@ class StackEntity extends Entity implements LayerStructureInterface
     protected function _resolveReturnStructure($data, $asArray, $entityType)
     {
         if (!$asArray) {
-            $data = layer($data, $entityType);
+            $data = new Layer($data, $entityType);
         }
         return $data;
     }

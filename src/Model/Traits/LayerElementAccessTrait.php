@@ -15,13 +15,12 @@ use Stacks\Constants\LayerCon;
  */
 trait LayerElementAccessTrait
 {
-
     /**
      * Get the count of stored entities
      *
-     * @return integer
+     * @return int
      */
-    public function count() {
+    public function count(): int {
         return count($this->getData());
     }
 
@@ -90,12 +89,23 @@ trait LayerElementAccessTrait
     }
 
     /**
-     * Convenience wrapper to return the first element
+     * Get the last entity out of storage
      *
-     * @return Entity
+     * @return Entity|null
      */
-    public function shift() {
-        return $this->element(0, LayerCon::LAYERACC_INDEX);
+    public function shift()
+    {
+        return count($this->_data) > 0 ? $this->element(count($this->_data) - 1) : null;
+    }
+
+    /**
+     * Get the first entity out of storage
+     *
+     * @return Entity|null
+     */
+    public function pop()
+    {
+        return count($this->_data) > 0 ? $this->element(0) : null;
     }
 
 }

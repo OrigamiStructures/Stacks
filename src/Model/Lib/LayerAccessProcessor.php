@@ -3,10 +3,11 @@
 
 namespace Stacks\Model\Lib;
 
+use AppendIterator;
+use ArrayIterator;
 use Cake\Collection\CollectionInterface;
-use Stacks\Model\Lib\Layer;
+use Exception;
 use Stacks\Interfaces\LayerAccessInterface;
-use Stacks\Interfaces\LayerStructureInterface;
 use Stacks\Interfaces\LayerTaskInterface;
 use Cake\Collection\Collection;
 
@@ -14,6 +15,7 @@ use Cake\Collection\Collection;
  * LayerAccessProcessor
  *
  * @package Stacks\Model\Lib
+ * @method getVisible()
  */
 class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
 {
@@ -28,14 +30,14 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
     /**
      * microtime stamp of the AccessArg object responsible for the current ResultIterator
      *
-     * @var null|microtime
+     * @var null|float|string
      */
     protected $previousArgsTimestamp = null;
 
     /**
      * All the entities to operate on
      *
-     * @var \AppendIterator
+     * @var AppendIterator
      */
     protected $AppendIterator;
 
@@ -48,7 +50,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      *
      * @todo how do we detect internal chages to AccessArgs?
      *
-     * @var array|\ArrayIterator
+     * @var array|ArrayIterator
      */
     protected $ResultIterator = FALSE;
 
@@ -63,7 +65,8 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
     /**
      * Get the currently stored AppendIterator
      *
-     * @return LayerAppendIterator|\AppendIterator
+     * @return LayerAppendIterator|AppendIterator
+     * @noinspection PhpUnused
      */
     public function getAppendIterator() {
         return $this->AppendIterator;
@@ -71,7 +74,8 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
 
     /**
      * microtime stamp of the AccessArg object responsible for the current ResultIterator
-     * @return microtime|null
+     * @return float|string|null
+     * @noinspection PhpUnused
      */
     public function getPreviousArgsTimestamp()
     {
@@ -94,13 +98,13 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
     public function insert($data)
     {
         if (is_array($data)){
-            $result = new \ArrayIterator($data);
+            $result = new ArrayIterator($data);
         } elseif (is_a($data, '\Stacks\Model\Lib\Layer')) {
-            $result = new \ArrayIterator($data->toArray());
+            $result = new ArrayIterator($data->toArray());
         } elseif (is_a($data, '\Iterator'))  {
             $result = $data;
         } else {
-            $result = new \ArrayIterator([$data]);
+            $result = new ArrayIterator([$data]);
         }
         $this->AppendIterator->append($result);
         return $this;
@@ -169,11 +173,12 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      * Get the result as Layer object
      *
      * @return Layer
+     * @throws Exception
      */
     public function toLayer()
     {
         $result = $this->toArray();
-        return layer($result, $this->entityClass);
+        return new Layer($result, $this->entityClass);
     }
 
     /**
@@ -290,7 +295,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      * Run the Access process and return an iterator containing the result
      *
      * @param $argObj LayerAccessArgs
-     * @return LayerAccessProcessor
+     * @return AppendIterator|array|ArrayIterator|CollectionInterface|LayerAppendIterator
      */
     public function perform($argObj)
     {
@@ -311,7 +316,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
         }
 
         if(is_array($this->ResultIterator)) {
-            $this->ResultIterator = new \ArrayIterator($this->ResultIterator);
+            $this->ResultIterator = new ArrayIterator($this->ResultIterator);
         }
 
         $this->previousArgsTimestamp = $this->AccessArgs->getTimestamp();
@@ -331,7 +336,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
         $comparison = $argObj->selectComparison($argObj->valueOf('filterOperator'));
 
         $set = collection($this->ResultIterator);
-        return $set->filter(function ($entity, $key) use ($argObj, $comparison) {
+        return $set->filter(function ($entity) use ($argObj, $comparison) {
             $actual = $argObj->accessNodeObject('filter')->value($entity);
             return $comparison($actual, $argObj->valueOf('filterValue'));
         });
@@ -360,47 +365,23 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
      */
     protected function performPagination()
     {
-        $page = $this->AccessArgs->valueOf('page');
+        $page = $originalPage = $this->AccessArgs->valueOf('page');
         $limit = $this->AccessArgs->valueOf('limit');
         $unchuncked = new Collection($this->ResultIterator);
         $chunked = $unchuncked->chunk($limit)->toArray();
-//        osd($chunked);
-        if(isset($chunked[$page])) {
-            $result = $chunked[$page];
+        $pages = array_keys($chunked);
+        if(isset($pages[$page-1]) && isset($chunked[$pages[$page-1]])) {
+            $result = $chunked[$pages[$page-1]];
         } else {
             $result = array_pop($chunked);
         }
         return $result;
-//        $x = [
-//            'index' => [
-//                'finder' => 'all',
-//                'page' => (int) 1,
-//                'current' => (int) 4,
-//                'count' => (int) 83,
-//                'perPage' => (int) 4,
-//                'start' => (int) 1,
-//                'end' => (int) 4,
-//                'prevPage' => false,
-//                'nextPage' => true,
-//                'pageCount' => (int) 21,
-//                'sort' => 'collector',
-//                'direction' => 'desc',
-//                'limit' => null,
-//                'sortDefault' => 'collector',
-//                'directionDefault' => 'desc',
-//                'scope' => 'index',
-//                'completeSort' => [
-//                    'Identities.collector' => 'desc'
-//                ]
-//            ]
-//        ];
     }
 
     /**
      * Store an the Access process instruction set
      *
      * @param $argObj LayerAccessArgs
-     * @return bool
      */
     public function setArgObj($argObj)
     {
@@ -424,6 +405,7 @@ class LayerAccessProcessor implements LayerAccessInterface, LayerTaskInterface
 
     /**
      * Remove the internal AccessArgs object
+     * @noinspection PhpUnused
      */
     public function clearAccessArgs()
     {

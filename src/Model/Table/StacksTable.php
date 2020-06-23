@@ -2,7 +2,14 @@
 namespace Stacks\Model\Table;
 
 use Cake\Database\Schema\TableSchemaInterface;
+use Cake\Filesystem\File;
+use Cake\Filesystem\Folder;
+use Cake\Utility\Inflector;
+use Cake\Routing\Router;
+use Stacks\Constants\CacheCon;
 use Stacks\Constants\LayerCon;
+use Stacks\Exception\BadClassConfigurationException;
+use Stacks\Exception\StackRegistryException;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Lib\StackRegistry;
 use Cake\ORM\Query;
@@ -68,6 +75,56 @@ class StacksTable extends Table
 	protected $registry = FALSE;
 
     /**
+     * @var StackSet
+     */
+	public $stacks;
+
+	public $map = [];
+
+	public $cacheControlMap = [
+	    'people' => [
+	        'Order' => [
+	            'person'
+            ],
+            'Tenants' => [
+                'tenant_workers'
+            ],
+            'Warehouse' => [
+                'warehouse_workers'
+            ],
+            'Person' => [
+                'person'
+            ]
+        ],
+        'addresses' => [
+            'Tenants' => [
+                'office_address',
+                'shipping_addresses'
+            ],
+            'Warehouse' => [
+                'office_address'
+            ],
+            'Person' => [
+                'addresses'
+            ]
+        ],
+        'tenants' => [
+            'Order' => [
+                'tenant'
+            ],
+            'Tenants' => [
+                'tenant'
+            ],
+            'Warehouse' => [
+                'tenants'
+            ],
+            'Person' => [
+                'tenants'
+            ]
+        ]
+	    ];
+
+    /**
      * Initialize method
      *
      * @param array $config The configuration for the Table.
@@ -77,7 +134,11 @@ class StacksTable extends Table
         //Check if proper table is created
         parent::initialize($config);
 		$this->configureStackCache();
-		$this->validateRoot();
+        $this->addStackSchema(array_keys($this->map));
+        $this->mapTables($this->map);
+        $this->addSeedPoint();
+        $this->validateRoot();
+
     }
 
 	/**
@@ -109,12 +170,11 @@ class StacksTable extends Table
 	 */
 	private function configureStackCache() {
 		if (is_null(Cache::getConfig($this->cacheName()))) {
-			Cache::setConfig($this->cacheName(),
-					[
+			Cache::setConfig($this->cacheName(), [
 				'className' => 'File',
-				'path' => CACHE . 'stack_entities' . DS,
-				'prefix' => $this->cacheName() . '_',
-				'duration' => '+1 week',
+				'path' => CACHE . 'stacks' . DS . Inflector::underscore($this->cacheName()) . DS,
+				'prefix' => 'stack_' . '_',
+				'duration' => '+1 year',
 				'serialize' => true,
 			]);
 		}
@@ -146,6 +206,31 @@ class StacksTable extends Table
 
 	public function rootTable() {
 		return $this->{$this->rootTable};
+	}
+
+    /**
+     * Add the layer-to-db.table connection for cache management
+     *
+     * Later, as the system changes individual records, those records will
+     * be content of some cached stack. We need to be able to look up which
+     * kinds of stacks a specific record might be a member of so we can identify
+     * the caches that must be deleted.
+     *
+     * This method takes adds this stacks layer/table mapping so we can later
+     * know how to check a changed record's id as a possible member of cached data
+     *
+     * @param $map array
+     * @return array
+     */
+    protected function mapTables($map)
+    {
+        /**
+         * If the cache recording the aggregate map is empty then we
+         * go through each class in the Table list and run its mapTables()
+         * to get a full mapping.
+         */
+        //	protected function distillMethodName($seed)
+        return [];
 	}
 
 	/**
@@ -227,7 +312,7 @@ class StacksTable extends Table
 	 * @param Query $query
 	 * @param array $options
 	 * @return StackSet
-	 * @throws \BadMethodCallException
+     * @throws \Exception
 	 */
 	public function findStacksFor($query, $options) {
 
@@ -251,6 +336,7 @@ class StacksTable extends Table
      * @param $seed string
      * @param $ids array
      * @return StackSet
+     * @throws \Exception
      */
     public function stacksFor($seed, $ids) {
         return $this->processStackQuery($seed, $ids);
@@ -272,8 +358,9 @@ class StacksTable extends Table
     /**
      * @param $seed string
      * @param $ids array
-     * @param bool|callable $paginator
-     * @return StackSet\
+     * @param bool|callable|string $paginator
+     * @return StackSet
+     * @throws \Exception
      */
     private function processStackQuery($seed, $ids, $paginator = 'none') {
         if (empty($ids)) {
@@ -281,7 +368,9 @@ class StacksTable extends Table
         }
 
         $IDs = $this->distillation($seed, $ids, $paginator);
-        return $this->stacksFromRoot($IDs);
+        $stackSet = $this->stacksFromRoot($IDs);
+        $this->localLayerConditions($stackSet);
+        return $stackSet;
     }
 
 
@@ -303,12 +392,19 @@ class StacksTable extends Table
 	 *
 	 * @param string $seed
 	 * @param array $ids
-     * @param string|callable
+     * @param string|callable $paginator
 	 * @return array Root entity id set for the stack
+     * @throws \Exception
 	 */
 	protected function distillation($seed, $ids, $paginator = 'none') {
+	    /* @var Query $query */
+
 		$query = $this->{$this->distillMethodName($seed)}($ids);
-		$query = $this->localConditions($query);
+		$query = $this->localConditions(
+		    $query,
+            $this->getAlias(),
+            $query->getRepository()->getAlias()
+        );
 		if ($paginator !== 'none') {
 			$query = $paginator($query/*, $params, $settings*/);
 		}
@@ -317,25 +413,101 @@ class StacksTable extends Table
 	}
 
 	/**
-	 * Add any local-stack appropriate conditions to the query
+	 * Add any local-stack appropriate conditions to the seed query
 	 *
-	 * Override in each concrete StackTable class to suit the situation.
-	 * For example PersonCardsTable adds: where(['member_type' => 'Person'])
-	 * and many other places might add: where(['user_id' => $userId])
-	 *
-	 * I imagine a situation where superusers would need to change the
-	 * 'normal' behavior, so while most uses won't carry $options,
-	 * the signature allows it for fine-tuning the stack results
-	 *
-	 * @param Query $query
-	 * @param array $options Allow special data injection just in case
-	 * @return Query
-	 */
-	protected function localConditions($query, $options = []) {
-		return $query;
-	}
+	 * Override in each concrete StackTable class to implement.
+     * The two active table names (current stack table and current
+     * distiller table) are provided so the implementing Table class
+     * (distiller) has enough context to choose a proper query modification.
+     *
+     * ConcreteDistillerTable::localConditions() is the place to implement
+     * your override process for scoping the query. Your policy will be
+     * operating on the query produced by the distiller you used for
+     * the request.
+     *
+     * If you don't override and are using the Authentication/Authorization
+     * plugins and are curently logged in, this default implementation will
+     * look for a scope policy (eg. ArticlePolicy::scopeAuthorStackArticles
+     * when getting author stacks via article seeds)
+     *
+     * If there is no override, and no Auth-z policy the query is
+     * returned without change.
+     *
+     * @param Query $query
+     * @param string $stackTableName eg. AuthorStack
+     * @param string $distillerTableName eg. People
+     * @param array $options Allow special data injection just in case
+     * @return Query
+     */
+    protected function localConditions($query, $stackTableName, $distillerTableName, $options = [])
+    {
+        $context = $this->queryContext($stackTableName, $distillerTableName);
+        $identity = Router::getRequest()->getAttribute('identity');
 
-	/**
+        if (!is_null($identity) && method_exists(
+                $this->getPolicyClassName($distillerTableName),
+                "scope$context"
+            ))
+        {
+            return $identity->applyScope($context, $query);
+        } else {
+            return $query;
+        }
+    }
+
+    /**
+     * Get the name of a Policy for a particular table
+     *
+     * @param $fragment string The distiller class name
+     * @return string
+     */
+    protected function getPolicyClassName($fragment): string
+    {
+        return "\App\Policy\\{$fragment}TablePolicy";
+    }
+    /**
+     * Get name for the query context
+     *
+     * In a policy this will potentially be the back part of a method name:
+     *      function scopeStackTableDistillerTable( )
+     *
+     * @param $stack string The StackTable alias
+     * @param $dist string The distiller class name
+     * @return string
+     */
+    protected function queryContext($stack, $dist): string
+    {
+        return $stack . $dist;
+    }
+
+    /**
+     * Add any local layer-appropriate filtering to the StackSet contents
+     *
+     * StackEntities are cached with full content. But in some cases you
+     * may want to limit the layer content. Implement the method in
+     * your concrete StackTable to make these adjustments.
+     *
+     * If you are using Authentication/Authorization, are logged in, and
+     * have a StackSetPolicy::scopeLayers written, that policy will receive
+     * the set so you can do any necessary filtering of layer contents
+     *
+     * @param $stackSet StackSet
+     * @return StackSet
+     */
+    protected function localLayerConditions($stackSet)
+    {
+        $identity = Router::getRequest()->getAttribute('identity');
+
+        if (
+            !is_null($identity)
+            && method_exists('\App\Policy\StackSetPolicy', 'scopeLayers')
+        ){
+            $identity->applyScope('layers', $stackSet);
+        }
+        return $stackSet;
+    }
+
+    /**
 	 * From mixed seed types, distill to a root ID set
 	 *
 	 * <code>
@@ -382,7 +554,7 @@ class StacksTable extends Table
 	/**
 	 * Read the stacks from registry, cache or assemble and cache them
 	 *
-	 * This is the destination for all the distillFor variants.
+	 * This is the getDestination for all the distillFor variants.
 	 * It calls all the individual marshaller methods for
 	 * the current concrete stack table
 	 *
@@ -392,31 +564,35 @@ class StacksTable extends Table
     public function stacksFromRoot($ids) {
 		$this->stacks = $this->stackSet($this->template());
         foreach ($ids as $id) {
+            /* @var false|StackEntity $stack */
+
+            $inCache = false;
+            $inRegistry = true;
             if($this->stacks->element($id, LayerCon::LAYERACC_ID)){
                 continue;
             }
             $stack = $this->readRegistry($id);
             if($stack === FALSE) {
+                $inRegistry = false;
                 $stack = $this->readCache($id);
+                $inCache = $stack === false ? false : true;
             }
             if($stack === FALSE) {
                 $stack = $this->MarshalStack($id);
             }
 
-
-
-			$stack = $this->readRegistry($id);
-			if (!$stack && !$this->stacks->element($id, LayerCon::LAYERACC_ID)) {
-				$stack = $this->writeRegistry($id, $this->MarshalStack($id));
-			}
-
 			/* Abandon any empty entities. Empty root layer = empty stack */
-			if ($stack->count($this->rootName()) == 0) { continue; }
+			if ($stack->isEmptyStack()) { continue; }
 
 			$stack->clean();
-			$this->stacks->insert($id, $stack);
-			$this->writeCache($id, $stack);
-		}
+			$this->stacks->insertToStackSet($id, $stack);
+            if (!$inRegistry) {
+                $this->writeRegistry($id, $stack);
+            }
+            if (!$inCache) {
+                $this->writeCache($id, $stack);
+            }
+        }
  		return $this->stacks;
 	}
 
@@ -467,7 +643,8 @@ class StacksTable extends Table
 	 */
 	protected function readCache($id) {
 		if (Configure::read('stackCache')) {
-			return Cache::read($this->cacheKey($id), $this->cacheName());
+			$result = Cache::read($this->cacheKey($id), $this->cacheName());
+			return $result ?? false;
 		}
 		return FALSE;
 	}
@@ -555,6 +732,7 @@ class StacksTable extends Table
 	 * @todo There is no way to override the StackSet class
 	 *	    in the case of conventions-breaking usage
 	 *
+     * @param $template
 	 * @return StackSet
 	 */
 	protected function stackSet($template) {
@@ -640,7 +818,8 @@ class StacksTable extends Table
 	 * @param string $table The name of the table class by convention
 	 * @param string $column Name of the integer column to search
 	 * @param array $ids
-	     */
+     * @return Query
+	 */
 	protected function _distillFromJoinTable($table, $column, $ids) {
 		$joinTable = TableRegistry::getTableLocator()
 				->get($table)
@@ -702,8 +881,14 @@ class StacksTable extends Table
         }
     }
 
-    protected function addSeedPoint(array $seedPoints)
+    protected function addSeedPoint(array $seedPoints = [])
     {
+        $seedPoints = collection($this->map)
+            ->reduce(function($accum, $value, $key) {
+                $accum[] = Inflector::singularize($key);
+                $accum[] = Inflector::pluralize($key);
+                return $accum;
+            }, []);
         foreach ($seedPoints as $index => $seedPoint) {
             $methodName = $this->distillMethodName($seedPoint);
             if(method_exists($this, $methodName)){
@@ -715,5 +900,105 @@ class StacksTable extends Table
                 there is not a proper $methodName function");
             }
         }
+    }
+
+    /**
+     * Decide how to send layer data to set()
+     *
+     * @param $value mixed
+     * @return array
+     */
+    protected function _wrap($value)
+    {
+        if (is_object($value)) {
+            $value = [$value];
+        }
+        return $value ?? [];
+    }
+
+    /**
+     * Set the layer -> base table map
+     * @param array $map
+     */
+    public function setMap(array $map)
+    {
+        $this->map = $map;
+    }
+
+    /**
+     * Create a portion of the layer map
+     *
+     * Using the map property in this concrete instantiation
+     * of the StacksTable, create a portion of the map of concrete
+     * table entities to layer names in all stack tables
+     *
+     *         $map = [
+     *          'concreteTableName' => [
+     *              'stackTableName' => [
+     *                  'layerName',
+     *                  'layerName'
+     *                  ],
+     *              'stackTableName' => [
+     *                  'layerName',
+     *                  'layerName'
+     *                  ]
+     *              ],
+     *          'concreteTableName'
+     *          ];
+     *
+     *
+     * @throws \Exception
+     */
+    public function compileLayerMapFragment()
+    {
+        try {
+            $cache = Cache::read(CacheCon::SCKEY, CacheCon::SCCONFIG) ?? [];
+            $cache = collection($this->map)
+                ->reduce(function ($accum, $concreteTableName, $layerName) {
+                    $current = Hash::get($accum, "$concreteTableName.$this->_alias") ?? [];
+                    return Hash::insert($accum, "$concreteTableName.$this->_alias." . count($current), $layerName);
+                }, $cache);
+            Cache::write(CacheCon::SCKEY, $cache, CacheCon::SCCONFIG);
+        } catch (\Exception $e) {
+            $msg = "The stack table map cache write did not work";
+            throw new \Exception($msg);
+        }
+    }
+
+    /**
+     * Distill stack ids from given seed
+     *
+     * Given a named seed and a specific layer id
+     * return an array of the stacks that contain this layer
+     *
+     * @param $seed string
+     * @param $id array
+     * @return Query
+     */
+    public function distillFromGivenSeed(string $seed, array $id)
+    {
+        $method = $this->distillMethodName($seed);
+        return $this->$method($id);
+    }
+
+    /**
+     * Delete a specific cache based upon id
+     *
+     * @param $id
+     */
+    public function deleteCache($id)
+    {
+        $folder = new Folder(Cache::getConfig($this->cacheName())['path']);
+        $file = $folder->find(Cache::getConfig($this->cacheName())['prefix'] . $this->cacheKey($id));
+        if (empty($file)) {
+            $result = 'None found: ';
+        }
+        else {
+            $result = Cache::delete($this->cacheKey($id), $this->cacheName())
+                ? 'Expired: '
+                : 'ERROR'
+                ;
+        }
+        return $result;
     }
 }

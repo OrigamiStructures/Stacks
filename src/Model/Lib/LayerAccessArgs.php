@@ -2,15 +2,13 @@
 
 namespace Stacks\Model\Lib;
 
-use Stacks\Model\Lib\Layer;
+use Exception;
 use Stacks\Exception\MissingPropertyException;
 use Stacks\Interfaces\LayerAccessInterface;
 use Stacks\Interfaces\LayerTaskInterface;
 use BadMethodCallException;
 use Cake\Utility\Inflector;
-use Stacks\Model\Lib\ValueSource;
 use Stacks\Lib\Traits\ErrorRegistryTrait;
-use Stacks\Model\Lib\ValueSourceRegistry;
 use \InvalidArgumentException;
 
 /**
@@ -58,7 +56,7 @@ class LayerAccessArgs implements LayerAccessInterface
     use ErrorRegistryTrait;
 
     /**
-     * @var LayerTaskInterface
+     * @var bool|LayerAccessInterface|LayerAccessProcessor|LayerTaskInterface
      */
     protected $data;
 
@@ -151,7 +149,7 @@ class LayerAccessArgs implements LayerAccessInterface
     /**
      * Set the sort type
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @param $type int
      * @return $this
      */
@@ -239,7 +237,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * Get the result as Layer object
      *
      * @return Layer
-     * @throws MissingPropertyException
+     * @throws MissingPropertyException|Exception
      */
     public function toLayer()
     {
@@ -313,6 +311,10 @@ class LayerAccessArgs implements LayerAccessInterface
 
 //</editor-fold>
 
+    /**
+     * LayerAccessArgs constructor.
+     * @param bool|LayerAccessInterface|LayerAccessProcessor $data
+     */
     public function __construct($data = FALSE)
     {
         $this->_registry = new ValueSourceRegistry();
@@ -322,6 +324,9 @@ class LayerAccessArgs implements LayerAccessInterface
         return $this->checkOut();
     }
 
+    /**
+     * @return $this
+     */
     public function checkOut()
     {
         $this->change_timestamp = microtime();
@@ -332,6 +337,9 @@ class LayerAccessArgs implements LayerAccessInterface
         return $this->change_timestamp;
     }
 
+    /**
+     * @return bool|LayerAccessInterface|LayerTaskInterface|LayerAccessProcessor
+     */
     public function data()
     {
         return $this->data;
@@ -386,7 +394,7 @@ class LayerAccessArgs implements LayerAccessInterface
      *        if the KeyObject isn't yet constructed but the layer is
      *        known, make the object since the key node is now known
      *
-     * @param type $origin
+     * @param string $origin
      */
     private function setupValueObjects($origin)
     {
@@ -412,6 +420,7 @@ class LayerAccessArgs implements LayerAccessInterface
         }
     }
 
+    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     private function evaluateLayer()
     {
         if (!$this->hasLayer() && is_a($this->data(), 'Stacks\Model\Lib\Layer')) {
@@ -419,15 +428,21 @@ class LayerAccessArgs implements LayerAccessInterface
         }
     }
 
+    /**
+     * @param string $name
+     */
     private function buildAccessObject($name)
     {
-        $result = $this->getValueRegistry()->load(
-            $name,
-            [
-                'entity' => $this->valueOf('layer'),
-                'node' => $this->source_node[$name]
-            ]
-        );
+        try {
+            $this->getValueRegistry()->load(
+                $name,
+                [
+                    'entity' => $this->valueOf('layer'),
+                    'node' => $this->source_node[$name]
+                ]
+            );
+        } catch (Exception $e) {
+        }
     }
 
 // </editor-fold>
@@ -453,7 +468,7 @@ class LayerAccessArgs implements LayerAccessInterface
     {
         try {
             return !is_null($this->getValueRegistry()->get($name));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return false;
         }
     }
@@ -464,6 +479,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * Requires 'valueSource and that a 'filterValue' has been set.
      *
      * @return boolean
+     * @noinspection PhpUnused
      */
     public function isFilter()
     {
@@ -479,6 +495,7 @@ class LayerAccessArgs implements LayerAccessInterface
      *
      * @param int $page
      * @param int $limit
+     * @return $this
      */
     public function specifyPagination($page, $limit)
     {
@@ -487,6 +504,10 @@ class LayerAccessArgs implements LayerAccessInterface
         return $this->checkOut();
     }
 
+    /**
+     * @param $param
+     * @return $this
+     */
     public function setPage($param)
     {
         $this->_page = $param;
@@ -499,13 +520,13 @@ class LayerAccessArgs implements LayerAccessInterface
      * -1 will return all
      * 1 is actually 'first in page' rather than 'first in collection'
      *
-     * @param type $param
-     * @return \Stacks\Model\Lib\LayerAccessArgs
+     * @param int|string $param
+     * @return LayerAccessArgs
      */
     public function setLimit($param)
     {
-        $param = $param === 'all' ? -1 : $param;
-        $param = $param === 'first' ? 1 : $param;
+//        $param = $param === 'all' ? -1 : $param;
+//        $param = $param === 'first' ? 1 : $param;
         $this->_limit = $param;
         return $this->checkOut();
     }
@@ -518,6 +539,12 @@ class LayerAccessArgs implements LayerAccessInterface
 
 // <editor-fold defaultstate="collapsed" desc="VALUE RETRIEVAL -- PROPOSED --">
 
+    /**
+     * @param $pointer
+     * @param $entity
+     * @return mixed|null
+     * @noinspection PhpUnusedPrivateMethodInspection
+     */
     private function getEntityValue($pointer, $entity)
     {
         if (in_array($pointer, $entity->visibleProperties())) {
@@ -538,7 +565,8 @@ class LayerAccessArgs implements LayerAccessInterface
      *
      * @param string $value_source A property_name or method_name()
      * @param mixed $filter_value The value to compare to the $source_value
-     * @param string $filter_operator The kind of comparison to make
+     * @param bool $filter_operator The kind of comparison to make
+     * @return LayerAccessArgs
      */
     public function specifyFilter($value_source, $filter_value, $filter_operator = FALSE)
     {
@@ -552,6 +580,8 @@ class LayerAccessArgs implements LayerAccessInterface
      * Set the property or method that will be filtered
      *
      * @param $value_source string
+     * @return LayerAccessArgs
+     * @noinspection PhpUnused
      */
     public function setFilterTestSubject($value_source)
     {
@@ -571,7 +601,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * filter_operator will be assumed as == if it hasn't been set
      *
      * @param mixed $param
-     * @return \Stacks\Model\Lib\LayerAccessArgs
+     * @return LayerAccessArgs
      */
     public function setFilterValue($param)
     {
@@ -599,7 +629,7 @@ class LayerAccessArgs implements LayerAccessInterface
      * true (=== T), false (=== F), truthy (boolean of value)
      *
      * @param string $param
-     * @return \Stacks\Model\Lib\LayerAccessArgs
+     * @return LayerAccessArgs
      */
     public function setFilterOperator($param)
     {
@@ -638,10 +668,10 @@ class LayerAccessArgs implements LayerAccessInterface
             return $this->$property;
         }
         return '';
-        if (!isset($this->$property)) {
-            throw new BadMethodCallException("Request to get LayerAccessParams::$param. The property does not exist.");
-        }
-        return $this->$property;
+//        if (!isset($this->$property)) {
+//            throw new BadMethodCallException("Request to get LayerAccessParams::$param. The property does not exist.");
+//        }
+//        return $this->$property;
     }
 
 // </editor-fold>
@@ -653,11 +683,12 @@ class LayerAccessArgs implements LayerAccessInterface
      *
      * @param string $operator
      * @return callable
+     * @noinspection PhpUnusedParameterInspection
      */
     public function selectComparison($operator)
     {
         $ops = [
-            'bad_op' => function ($actual, $test_value) {
+            'bad_op' => function () {
                 return FALSE;
             },
             '==' => function ($actual, $test_value) {

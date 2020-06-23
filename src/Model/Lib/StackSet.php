@@ -1,6 +1,7 @@
 <?php
 namespace Stacks\Model\Lib;
 
+use Cake\Datasource\ResultSetInterface;
 use Stacks\Interfaces\LayerStructureInterface;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Traits\LayerElementAccessTrait;
@@ -18,10 +19,11 @@ use Cake\Utility\Text;
  *
  * @author dondrake
  */
-class StackSet implements LayerStructureInterface, \Countable {
+class StackSet implements LayerStructureInterface, ResultSetInterface {
 
 	use LayerElementAccessTrait;
 	use ConventionsTrait;
+	use ResultSetSatisfactionTrait;
 
 	protected $_data = [];
 
@@ -47,6 +49,11 @@ class StackSet implements LayerStructureInterface, \Countable {
 	public function __construct($stackEntityTemplate)
     {
         $this->template = $stackEntityTemplate;
+    }
+
+    public function getTemplate()
+    {
+        return $this->template;
     }
     //<editor-fold desc="LayerStructureInterface Realization">
     /**
@@ -75,6 +82,16 @@ class StackSet implements LayerStructureInterface, \Countable {
             $Product->insert($result);
         }
         return $Product;
+    }
+
+    /**
+     * Get the list of layer in these stack entities
+     *
+     * @return array|string[]
+     */
+    public function getLayerList()
+    {
+        return $this->template->getVisible();
     }
 
     /**
@@ -191,14 +208,13 @@ class StackSet implements LayerStructureInterface, \Countable {
      * @param string $id
      * @param StackEntity $stack
      */
-    public function insert($id, $stack) {
+    public function insertToStackSet($id, $stack) {
         $this->_data[$id] = $stack;
         if (!isset($this->_stackName)) {
-            $this->_stackName = $stack->rootLayerName();
+            $this->_stackName = $stack->getRootLayerName();
             $this->paginatedModel = $this->_modelNameFromKey($this->_stackName);
         }
     }
-
     public function __debugInfo()
     {
         return [
