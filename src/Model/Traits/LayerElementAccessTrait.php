@@ -3,7 +3,9 @@
 
 namespace Stacks\Model\Traits;
 
+use Cake\ORM\Entity;
 use Stacks\Constants\LayerCon;
+use Stacks\Model\Entity\StackEntity;
 
 /**
  * LayerElementAccessTrait
@@ -91,7 +93,7 @@ trait LayerElementAccessTrait
     /**
      * Get the last entity out of storage
      *
-     * @return Entity|null
+     * @return StackEntity|Entity|null
      */
     public function shift()
     {
@@ -101,7 +103,7 @@ trait LayerElementAccessTrait
     /**
      * Get the first entity out of storage
      *
-     * @return Entity|null
+     * @return StackEntity|Entity|null
      */
     public function pop()
     {
