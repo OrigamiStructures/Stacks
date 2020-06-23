@@ -2,7 +2,7 @@
 
 namespace Stacks\Model\Entity;
 
-use Cake\Utility\Inflector;
+use Cake\Datasource\EntityInterface;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\UnknownLayerException;
 use Stacks\Interfaces\LayerStructureInterface;
@@ -75,6 +75,39 @@ class StackEntity extends Entity implements LayerStructureInterface
      */
     public $schema;
 
+    /**
+     * The layer data in Cake-standard nested form
+     *
+     * @var EntityInterface
+     */
+    protected $origin = null;
+
+    //<editor-fold desc="Nested Data for Form Compatibility">
+    /**
+     * Get the stack data a a standard Cake nested entity structure
+     *
+     * @return EntityInterface
+     */
+    public function emitNested()
+    {
+        return $this->origin;
+    }
+
+    /**
+     * Set the nested version of the data
+     *
+     * The top level marshaller can query the data and will get it in
+     * nested form. All the layer mashallers can work from this nest
+     * and the nest can be sent through here for storage and later retrieval
+     *
+     * @param $data
+     */
+    public function setOriginData($data)
+    {
+        $this->origin = $data;
+    }
+    //</editor-fold>
+
     //<editor-fold desc="LayerStructureInterface Realization">
     /**
      * Gather the available data at this level and package the iterator
@@ -110,7 +143,6 @@ class StackEntity extends Entity implements LayerStructureInterface
         return new LayerAccessArgs();
     }
     //</editor-fold>
-
 
     //<editor-fold desc="Introspection">
 
