@@ -126,6 +126,7 @@ class LayerSave implements EventListenerInterface
     {
         return [
             'Model.afterSaveCommit' => 'afterSaveCommit',
+            'Model.beforeDelete' => 'afterSaveCommit',
             'Stack.directCacheExpiry' => 'directCacheExpiry'
         ];
     }
