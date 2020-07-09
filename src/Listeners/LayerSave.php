@@ -17,6 +17,7 @@ use Cake\Utility\Hash;
 use Stacks\Constants\CacheCon;
 use Stacks\Model\Table\StacksTable;
 use function collection;
+use Cake\Utility\Inflector;
 
 /**
  * Listener Class to keep stack entity cache data up to date
@@ -203,11 +204,14 @@ class LayerSave implements EventListenerInterface
      */
     public function afterSaveCommit($event, $entity, $options)
     {
+//        osd($event->getSubject()->getAlias());
+//        osd($this->getParticipationMap());
+//        osd(Inflector::underscore($entity->getSource()));
         if (! in_array($event->getSubject()->getAlias(), ['Panels', 'Requests', 'Preferences'])) {
             $map = $this->getParticipationMap();
             $table = $entity->getSource();
             $this->logResult = [];
-            foreach (Hash::get($map, strtolower($table)) ?? [] as $stackName => $layerNames) {
+            foreach (Hash::get($map, Inflector::underscore($table)) ?? [] as $stackName => $layerNames) {
                 $this->expireStackCaches($stackName, $entity->id, $layerNames);
             }
             $this->writeResultLog($table, $entity->id);
