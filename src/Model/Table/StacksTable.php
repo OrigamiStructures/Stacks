@@ -80,51 +80,6 @@ class StacksTable extends Table
      */
 	public $stacks;
 
-	public $map = [];
-
-	public $cacheControlMap = [
-	    'people' => [
-	        'Order' => [
-	            'person'
-            ],
-            'Tenants' => [
-                'tenant_workers'
-            ],
-            'Warehouse' => [
-                'warehouse_workers'
-            ],
-            'Person' => [
-                'person'
-            ]
-        ],
-        'addresses' => [
-            'Tenants' => [
-                'office_address',
-                'shipping_addresses'
-            ],
-            'Warehouse' => [
-                'office_address'
-            ],
-            'Person' => [
-                'addresses'
-            ]
-        ],
-        'tenants' => [
-            'Order' => [
-                'tenant'
-            ],
-            'Tenants' => [
-                'tenant'
-            ],
-            'Warehouse' => [
-                'tenants'
-            ],
-            'Person' => [
-                'tenants'
-            ]
-        ]
-	    ];
-
     /**
      * Initialize method
      *
