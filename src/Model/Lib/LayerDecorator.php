@@ -5,8 +5,16 @@
 namespace Stacks\Model\Lib;
 
 
+use Cake\ORM\Entity;
+use Stacks\Constants\LayerCon;
+use Stacks\Model\Entity\StackEntity;
+use Stacks\Model\Traits\LayerElementAccessTrait;
+
 class LayerDecorator
 {
+
+    use LayerElementAccessTrait;
+
     /**
      * @var StackSet
      */
@@ -199,4 +207,40 @@ class LayerDecorator
     }
     //</editor-fold>
 
+    //<editor-fold desc="LAYER ELEMENT ACCESS TRAIT COVERAGE">
+    /**
+     * Return the n-th stored element or element(ID)
+     *
+     * Data is stored in id-indexed arrays, but this method will let you
+     * pluck the id's or n-th item out
+     *
+     * @param int $number Array index 0 through n or Id of element
+     * @param boolean $byIndex LAYERACC_INDEX or LAYERACC_ID
+     * @return Entity
+     */
+    public function element($key, $byIndex = LayerCon::LAYERACC_INDEX){
+        return $this->_component->element($key, $byIndex);
+    }
+
+    /**
+     * Get the last entity out of storage
+     *
+     * @return StackEntity|Entity|null
+     */
+    public function shift()
+    {
+        return $this->_component->shift();
+    }
+
+    /**
+     * Get the first entity out of storage
+     *
+     * @return StackEntity|Entity|null
+     */
+    public function pop()
+    {
+        return $this->_component->pop();
+    }
+    //</editor-fold>
+    
 }
