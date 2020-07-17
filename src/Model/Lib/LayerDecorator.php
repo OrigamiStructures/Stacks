@@ -13,8 +13,6 @@ use Stacks\Model\Traits\LayerElementAccessTrait;
 class LayerDecorator
 {
 
-    use LayerElementAccessTrait;
-
     /**
      * @var StackSet
      */
@@ -242,5 +240,5 @@ class LayerDecorator
         return $this->_component->pop();
     }
     //</editor-fold>
-    
+
 }
