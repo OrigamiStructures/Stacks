@@ -398,7 +398,8 @@ class StacksTable extends Table
     protected function localConditions($query, $stackTableName, $distillerTableName, $options = [])
     {
         $context = $this->queryContext($stackTableName, $distillerTableName);
-        $identity = Router::getRequest()->getAttribute('identity');
+
+        $identity = $this->getIdentity();
 
         if (!is_null($identity) && method_exists(
                 $this->getPolicyClassName($distillerTableName),
@@ -437,6 +438,18 @@ class StacksTable extends Table
     }
 
     /**
+     * the request may not exist when testing
+     *
+     * @return mixed|string|null
+     */
+    protected function getIdentity()
+    {
+        return is_null(Router::getRequest())
+            ? null
+            : Router::getRequest()->getAttribute('identity');
+    }
+
+    /**
      * Add any local layer-appropriate filtering to the StackSet contents
      *
      * StackEntities are cached with full content. But in some cases you
@@ -452,7 +465,7 @@ class StacksTable extends Table
      */
     protected function localLayerConditions($stackSet)
     {
-        $identity = Router::getRequest()->getAttribute('identity');
+        $identity = $this->getIdentity();
 
         if (
             !is_null($identity)
