@@ -224,4 +224,25 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
         ];
     }
 
+    /**
+     * Returns whether or not there are elements in this collection
+     *
+     * ### Example:
+     *
+     * ```
+     * $items [1, 2, 3];
+     * (new Collection($items))->isEmpty(); // false
+     * ```
+     *
+     * ```
+     * (new Collection([]))->isEmpty(); // true
+     * ```
+     *
+     * @return bool
+     */
+    public function isEmpty(): bool
+    {
+        return empty($this->getData());
+    }
+
 }
