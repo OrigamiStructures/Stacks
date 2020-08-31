@@ -4,10 +4,11 @@
     "type": "cakephp-plugin",
     "license": "MIT",
     "require": {
-        "cakephp/cakephp": "^4.0"
+        "cakephp/cakephp": "^4.1"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.0"
+        "phpunit/phpunit": "^8.0",
+        "pakacuda/cakephp-fixture-factories": "^0.2.28"
     },
     "autoload": {
         "psr-4": {

@@ -1,2 +1,5 @@
 .DS_Store
 /vendor
+/.idea/Stacks.iml
+/.idea/codeStyles
+/.idea/php-test-framework.xml
