@@ -3,6 +3,7 @@
 namespace Stacks\Model\Entity;
 
 use Cake\Datasource\EntityInterface;
+use Cake\Datasource\ResultSetInterface;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\UnknownLayerException;
 use Stacks\Interfaces\LayerStructureInterface;
@@ -14,6 +15,7 @@ use Cake\Utility\Hash;
 use Stacks\Model\Lib\LayerAccessArgs;
 use Stacks\Exception\BadClassConfigurationException;
 use Cake\Utility\Text;
+use Stacks\Model\Lib\ResultSetSatisfactionTrait;
 
 /**
  * Stacks
@@ -28,8 +30,10 @@ use Cake\Utility\Text;
  * @author Main
  * @method element($id, bool $LAYERACC_ID)
  */
-class StackEntity extends Entity implements LayerStructureInterface
+class StackEntity extends Entity implements LayerStructureInterface, ResultSetInterface
 {
+
+    use ResultSetSatisfactionTrait;
 
     /**
      * Name of the tip-of-the-iceberg entity for this stack
@@ -188,7 +192,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      * @param string $field The field to check.
      * @return bool
      */
-    public function isEmpty(string $field): bool
+    public function isEmpty(string $field = null): bool
     {
         if (is_null($field)) {
             $field = $this->getRootLayerName();
@@ -229,7 +233,7 @@ class StackEntity extends Entity implements LayerStructureInterface
      * @param string $layer
      * @return int
      */
-    public function count($layer)
+    public function count($layer = null) :int
     {
         $property = $this->get($layer);
         if (is_countable($property)) {
