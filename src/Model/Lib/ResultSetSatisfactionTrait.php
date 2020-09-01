@@ -235,12 +235,14 @@ trait ResultSetSatisfactionTrait
      * [1, 2, 3, 4]
      * ```
      *
-     * @param string|callable $matcher A dot separated path of column to follow
+     * @param string|callable|array $matcher A dot separated path of column to follow
+     * @param bool|null
      * so that the final one can be returned or a callable that will take care
      * of doing that.
-     * @return \Cake\Collection\CollectionInterface
+     * @return \Cake\Collection\CollectionInterface|array
      */
-    public function extract($matcher): CollectionInterface
+//    public function extract(array $fields, bool $onlyDirty = false): array
+   public function extract($matcher, $onlyDirty = null)
     {
         // TODO: Implement extract() method.
     }
