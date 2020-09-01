@@ -242,7 +242,7 @@ trait ResultSetSatisfactionTrait
      * @return \Cake\Collection\CollectionInterface|array
      */
 //    public function extract(array $fields, bool $onlyDirty = false): array
-   public function extract($matcher, $onlyDirty = null)
+   public function extract($matcher, $onlyDirty = null) : CollectionInterface|array
     {
         // TODO: Implement extract() method.
     }
