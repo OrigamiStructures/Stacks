@@ -4,13 +4,13 @@ namespace Stacks\Model\Entity;
 
 use Cake\Datasource\EntityInterface;
 use Cake\ORM\Locator\LocatorAwareTrait;
+use Cake\ORM\TableRegistry;
 use Stacks\Constants\LayerCon;
 use Stacks\Exception\UnknownLayerException;
 use Stacks\Interfaces\LayerStructureInterface;
 use Stacks\Model\Lib\LayerAccessProcessor;
 use Cake\ORM\Entity;
 use Stacks\Model\Lib\Layer;
-use Cake\ORM\TableRegistry;
 use Cake\Utility\Hash;
 use Stacks\Model\Lib\LayerAccessArgs;
 use Stacks\Exception\BadClassConfigurationException;
@@ -32,7 +32,8 @@ use Cake\Utility\Text;
 class StackEntity extends Entity implements LayerStructureInterface
 {
 
-    use LocatorAwareTrait;
+    /* @todo use of the trait throws an error. Can't suss it out yet */
+//    use LocatorAwareTrait;
 
     /**
      * Name of the tip-of-the-iceberg entity for this stack
@@ -475,7 +476,8 @@ class StackEntity extends Entity implements LayerStructureInterface
      */
     public function set($property, $value = null, array $options = [])
     {
-        $typeMap = $this->getTableLocator()
+//        $typeMap = $this->getTableLocator()
+        $typeMap = TableRegistry::getTableLocator()
             ->get($this->getSource())
             ->getSchema()
             ->typeMap();
