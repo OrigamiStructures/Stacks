@@ -69,7 +69,7 @@ trait LayerElementAccessTrait
      *
      * @param int $number Array index 0 through n or Id of element
      * @param boolean $byIndex LAYERACC_INDEX or LAYERACC_ID
-     * @return Entity
+     * @return StackEntity|Entity
      */
     public function element($key, $byIndex = LayerCon::LAYERACC_INDEX){
         $data = $this->getData();
