@@ -2,6 +2,7 @@
 namespace Stacks\Model\Lib;
 
 use Cake\Datasource\ResultSetInterface;
+use http\Exception\BadMethodCallException;
 use Stacks\Interfaces\LayerStructureInterface;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Traits\LayerElementAccessTrait;
@@ -205,6 +206,42 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
             }
         }
         return $stacks;
+    }
+
+    /**
+     * Make a new StackSet from the provide array of StackEntities
+     *
+     * @param StackEntity[] $data
+     * @return StackSet
+     */
+    public function newStackSet($data)
+    {
+        if (!is_array($data) || !$this->isHomogenous($data)) {
+            $msg = 'Stacks can only be made from arrays of \'same-type\' statck entities';
+            throw new \BadMethodCallException($msg);
+        }
+        $set = new StackSet($this->template);
+        collection($data)
+            ->map(function($stack) use ($set) {
+                $set->insertToStackSet($stack->rootId(), $stack);
+            })
+            ->toArray();
+        return $set;
+    }
+
+    /**
+     * array contain only same stack entity types as this stack set?
+     *
+     * @param StackEntity[] $data
+     * @return bool
+     */
+    private function isHomogenous($data)
+    {
+        $class_name = get_class($this->template);
+        return collection($data)
+            ->reduce(function($accum, $stackEntity, $index) use ($class_name) {
+                return $accum && (get_class($stackEntity) === $class_name);
+            }, true);
     }
 
     //</editor-fold>
