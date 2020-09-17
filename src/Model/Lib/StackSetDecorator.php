@@ -173,6 +173,11 @@ class StackSetDecorator
         return $this->_component->linkedTo($foreign, $foreign_id, $linked);
     }
 
+    public function newStackSet($data)
+    {
+        return $this->_component->newStackSet($data);
+    }
+
     /**
      * Return all StackEntities that contain a layer entity with id = $id
      *
