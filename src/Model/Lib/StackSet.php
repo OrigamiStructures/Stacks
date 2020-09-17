@@ -173,21 +173,17 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
 
     /**
 	 * Return all StackEntities that contain a layer entity with id = $id
-     *
-     * @todo This method seems confusing. Is it necessary?
 	 *
 	 * @param string $layer
 	 * @param string $id
 	 * @return array
 	 */
 	public function ownerOf($layer, $id) {
-		$stacks = [];
-		foreach ($this->_data as $stack) {
-			if ($stack->exists($layer, $id)) {
-				$stacks[] = $stack;
-			}
-		}
-		return $stacks;
+		return collection($this->_data)
+		    ->reduce(function($accum, $stack) use ($layer, $id) {
+                if ($stack->exists($layer, $id)) { $accum[] = $stack; }
+		        return $accum;
+		    }, []);
 	}
 
     /**
