@@ -152,6 +152,17 @@ class StackSet implements LayerStructureInterface, ResultSetInterface {
     //</editor-fold>
 
     //<editor-fold desc="Public Associated Data Features">
+
+    /**
+     * Create a LAA that targets members of a layer linked to one point
+     *
+     * The return LAA can be further sorted or paginated
+     *
+     * @param string $foreign the foreign key name
+     * @param int|string $foreign_id the id
+     * @param null|string $linked the layer name if we're not directly on a Layer object
+     * @return LayerAccessArgs
+     */
     public function linkedTo($foreign, $foreign_id, $linked = null) {
         $accessProcessor = $this->getLayer($linked);
         $foreign_key = $this->_modelKey($foreign);
