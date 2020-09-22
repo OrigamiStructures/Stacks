@@ -46,6 +46,8 @@ class StacksTable extends Table
 
 	protected $rootTable = NULL;
 
+	protected $useCache = true;
+
 	/**
      *
      * @var array
@@ -536,13 +538,11 @@ class StacksTable extends Table
             /* @var false|StackEntity $stack */
 
             $inCache = false;
-            $inRegistry = true;
             if($this->stacks->element($id, LayerCon::LAYERACC_ID)){
                 continue;
             }
             $stack = $this->readRegistry($id);
-            if($stack === FALSE) {
-                $inRegistry = false;
+            if($this->useCache() && $stack === FALSE) {
                 $stack = $this->readCache($id);
                 $inCache = $stack === false ? false : true;
             }
@@ -555,10 +555,10 @@ class StacksTable extends Table
 
 			$stack->clean();
 			$this->stacks->insertToStackSet($id, $stack);
-            if (!$inRegistry) {
+            if (!$this->inRegistry($id)) {
                 $this->writeRegistry($id, $stack);
             }
-            if (!$inCache) {
+            if ($this->useCache() && !$inCache) {
                 $this->writeCache($id, $stack);
             }
         }
@@ -604,6 +604,11 @@ class StacksTable extends Table
 		return $stack;
 	}
 
+    protected function inRegistry($id)
+    {
+        return $this->registry() && $this->registry()->has($id);
+	}
+
 	/**
 	 * Read cache to see if the ID'd stack is present
 	 *
@@ -631,6 +636,11 @@ class StacksTable extends Table
 		} else {
 			return FALSE;
 		}
+	}
+
+    protected function useCache()
+    {
+        return $this->useCache;
 	}
 
     /**
