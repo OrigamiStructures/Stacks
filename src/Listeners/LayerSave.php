@@ -126,9 +126,10 @@ class LayerSave implements EventListenerInterface
     public function implementedEvents(): array
     {
         return [
-            'Model.afterSaveCommit' => 'afterSaveCommit',
+//            'Model.afterSaveCommit' => 'afterSaveCommit',
             'Model.beforeDelete' => 'afterSaveCommit',
-            'Stack.directCacheExpiry' => 'directCacheExpiry'
+            'Stack.directCacheExpiry' => 'directCacheExpiry',
+            'Model.afterSave' => 'afterSaveCommit',
         ];
     }
 
@@ -202,7 +203,7 @@ class LayerSave implements EventListenerInterface
      * @noinspection PhpUnused
      * @noinspection PhpUnusedParameterInspection
      */
-    public function afterSaveCommit($event, $entity, $options)
+    public function afterSaveCommit($event, $entity = null, $options = null)
     {
 //        osd($event->getSubject()->getAlias());
 //        osd($this->getParticipationMap());
