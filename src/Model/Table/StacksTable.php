@@ -46,6 +46,11 @@ class StacksTable extends Table
 
 	protected $rootTable = NULL;
 
+    /**
+     * Set to false to disable stack caching for the table
+     *
+     * @var bool
+     */
 	protected $useCache = true;
 
 	/**
