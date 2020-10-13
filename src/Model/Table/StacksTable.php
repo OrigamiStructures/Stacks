@@ -514,7 +514,7 @@ class StacksTable extends Table
 	 * @return string
 	 */
 	protected function distillMethodName($seed) {
-		return 'distillFrom' . $this->_entityName($seed);
+		return 'distillFrom' . ucfirst($this->_entityName($seed));
 	}
 
 	/**
