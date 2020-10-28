@@ -133,9 +133,10 @@ class StacksTable extends Table
 	 */
 	private function configureStackCache() {
 		if (is_null(Cache::getConfig($this->cacheName()))) {
-			Cache::setConfig($this->cacheName(), [
+            $test_path = Configure::read('test-mode') ? 'test/' : '';
+            Cache::setConfig($this->cacheName(), [
 				'className' => 'File',
-				'path' => CACHE . 'stacks' . DS . Inflector::underscore($this->cacheName()) . DS,
+				'path' => CACHE . $test_path . 'stacks' . DS . Inflector::underscore($this->cacheName()) . DS,
 				'prefix' => 'stack_' . '_',
 				'duration' => '+1 year',
 				'serialize' => true,
