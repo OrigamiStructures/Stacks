@@ -84,7 +84,7 @@ class LayerSave implements EventListenerInterface
 
 
     /**
-     * Sidebar: Cake Events have requirements; regiter these event listeners.
+     * Sidebar: Cake Events have requirements; register these event listeners.
      *
      * Application.php will register this listener so it'll
      * be on all the time.
@@ -118,7 +118,7 @@ class LayerSave implements EventListenerInterface
      *
      * We have a backup plan though. Again, it depends on developer attentiveness.
      * The Stacks.directCacheExpiry action can be called by any code. That will allow
-     * logic that back-fills cache expirtation in cases where some associated data needs
+     * logic that back-fills cache expiration in cases where some associated data needs
      * examination.
      *
      * @inheritDoc
