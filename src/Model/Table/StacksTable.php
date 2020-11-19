@@ -1,16 +1,14 @@
 <?php
 namespace Stacks\Model\Table;
 
+use App\Policy\StackSetPolicy;
 use Cake\Database\Schema\TableSchemaInterface;
 use Cake\Datasource\EntityInterface;
-use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
 use Cake\Utility\Inflector;
 use Cake\Routing\Router;
 use Stacks\Constants\CacheCon;
 use Stacks\Constants\LayerCon;
-use Stacks\Exception\BadClassConfigurationException;
-use Stacks\Exception\StackRegistryException;
 use Stacks\Model\Entity\StackEntity;
 use Stacks\Model\Lib\StackRegistry;
 use Cake\ORM\Query;
@@ -18,7 +16,6 @@ use Cake\ORM\Table;
 use Cake\ORM\TableRegistry;
 use Cake\Core\ConventionsTrait;
 use Stacks\Model\Lib\StackSet;
-use Cake\Database\Schema\TableSchema;
 use Stacks\Exception\UnknownTableException;
 use Stacks\Exception\MissingMarshallerException;
 use Stacks\Exception\MissingDistillerMethodException;
@@ -477,7 +474,7 @@ class StacksTable extends Table
 
         if (
             !is_null($identity)
-            && method_exists('\App\Policy\StackSetPolicy', 'scopeLayers')
+            && method_exists(StackSetPolicy::class, 'scopeLayers')
         ){
             $identity->applyScope('layers', $stackSet);
         }
