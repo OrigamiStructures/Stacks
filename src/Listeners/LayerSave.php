@@ -5,6 +5,7 @@ namespace Stacks\Listeners;
 use App\Lib\Introspection;
 use App\Model\Entity\UserIdentity;
 use Cake\Cache\Cache;
+use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
 use Cake\Filesystem\Folder;
@@ -296,6 +297,9 @@ class LayerSave implements EventListenerInterface
 
     protected function writeResultLog($triggerTable, $triggerId)
     {
+        // don't log while testing
+        if (Configure::read('test-mode')) { return; }
+
         $request = Router::getRequest();
         $identity = $request->getAttribute('identity');
         /* @var UserIdentity $identity */
