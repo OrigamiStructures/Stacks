@@ -206,14 +206,16 @@ class LayerSave implements EventListenerInterface
      */
     public function afterSaveCommit($event, $entity = null, $options = null)
     {
-//        osd($event->getSubject()->getAlias());
-//        osd($this->getParticipationMap());
-//        osd(Inflector::underscore($entity->getSource()));
         if (! in_array($event->getSubject()->getAlias(), ['Panels', 'Requests', 'Preferences'])) {
+//            osd($event->getSubject()->getAlias());
+//            osd($this->getParticipationMap());
+//            osd(Inflector::underscore($entity->getSource()));
             $map = $this->getParticipationMap();
             $table = $entity->getSource();
             $this->logResult = [];
             foreach (Hash::get($map, Inflector::underscore($table)) ?? [] as $stackName => $layerNames) {
+//                osd($stackName, 'stack name');
+//                osd($layerNames, 'layer name');
                 $this->expireStackCaches($stackName, $entity->id, $layerNames);
             }
             $this->writeResultLog($table, $entity->id);
@@ -310,7 +312,7 @@ class LayerSave implements EventListenerInterface
         $header = "$name modified $trigger." . PHP_EOL . "Cache management was triggered through $controller/$action";
 
         if (empty($this->logResult)) {
-            $this->logResult = ['No mappings found. Did you save on a root table?'];
+            $this->logResult = ["No mappings found. Is $triggerTable a root table?"];
         }
         array_unshift($this->logResult, $header);
         Log::write(
