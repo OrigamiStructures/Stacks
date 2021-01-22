@@ -254,10 +254,12 @@ class LayerSave implements EventListenerInterface
          */
         $preExisting = TableRegistry::getTableLocator()->exists($stackName);
         $stackTable = TableRegistry::getTableLocator()->get($stackName);
-        foreach ($layerNames as $layerName) {
-            foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
+        if (!$stackTable->getConnection()->inTransaction()) {
+            foreach ($layerNames as $layerName) {
+                foreach ($stackTable->distillFromGivenSeed($layerName, [$id])->toArray() as $entity) {
                     $result = $stackTable->deleteCache($entity->id);
                     $this->logResult[] = $result . "{$stackName}[{$entity->id}] expired on change to {$layerName}[{$id}]";
+                }
             }
         }
         if (!$preExisting) {
