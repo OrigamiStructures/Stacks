@@ -1,6 +1,7 @@
 <?php
 namespace Stacks\Model\Lib;
 
+use Cake\Utility\Inflector;
 use Stacks\Interfaces\LayerAccessInterface;
 use Stacks\Interfaces\LayerStructureInterface;
 use Stacks\Model\Lib\LayerAccessArgs;
@@ -337,7 +338,8 @@ class Layer implements LayerStructureInterface, LayerAccessInterface, \Countable
             $name = ucfirst($this->_singularName($type));
         }
         $this->_className = $name; //$this->_entityName($name);
-        $this->_layer = strtolower($this->_camelize($this->_className));
+        $this->_layer = Inflector::underscore($this->_className);
+//        $this->_layer = strtolower($this->_camelize($this->_className));
         if (empty($sampleData)) {
             $class = "\App\Model\Entity\\$this->_className";
             $sampleData = new $class;
