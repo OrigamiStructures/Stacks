@@ -101,6 +101,10 @@ class StacksTable extends Table
 
     }
 
+    public function setUseCache($val)
+    {
+        $this->useCache = $val;
+    }
 	/**
 	 * Insure the stackTable properly identifies the root in the schema
 	 *
