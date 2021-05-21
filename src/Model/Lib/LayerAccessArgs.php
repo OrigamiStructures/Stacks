@@ -691,45 +691,54 @@ class LayerAccessArgs implements LayerAccessInterface
             'bad_op' => function () {
                 return FALSE;
             },
-            '==' => function ($actual, $test_value) {
-                return $actual == $test_value;
+            '==' => function ($actual, $expected) {
+                return $actual == $expected;
             },
-            '!=' => function ($actual, $test_value) {
-                return $actual != $test_value;
+            '!=' => function ($actual, $expected) {
+                return $actual != $expected;
             },
-            '===' => function ($actual, $test_value) {
-                return $actual === $test_value;
+            '===' => function ($actual, $expected) {
+                return $actual === $expected;
             },
-            '!==' => function ($actual, $test_value) {
-                return $actual !== $test_value;
+            '!==' => function ($actual, $expected) {
+                return $actual !== $expected;
             },
-            '<' => function ($actual, $test_value) {
-                return $actual < $test_value;
+            '<' => function ($actual, $expected) {
+                return $actual < $expected;
             },
-            '>' => function ($actual, $test_value) {
-                return $actual > $test_value;
+            '>' => function ($actual, $expected) {
+                return $actual > $expected;
             },
-            '<=' => function ($actual, $test_value) {
-                return $actual <= $test_value;
+            '<=' => function ($actual, $expected) {
+                return $actual <= $expected;
             },
-            '>=' => function ($actual, $test_value) {
-                return $actual >= $test_value;
+            '>=' => function ($actual, $expected) {
+                return $actual >= $expected;
             },
-            'true' => function ($actual, $test_value) {
+            'true' => function ($actual, $void = null) {
                 return $actual === TRUE;
             },
-            'false' => function ($actual, $test_value) {
+            'false' => function ($actual, $void = null) {
                 return $actual === FALSE;
             },
-            'in_array' => function ($actual, $test_values) {
-                return in_array($actual, $test_values);
+            'in_array' => function ($needle, $haystack) {
+                return in_array($needle, $haystack);
             },
-            '!in_array' => function ($actual, $test_values) {
-                return !in_array($actual, $test_values);
+            '!in_array' => function ($needle, $haystack) {
+                return !in_array($needle, $haystack);
             },
-            'truthy' => function ($actual, $test_value) {
+            'truthy' => function ($actual, $void = null) {
                 return (boolean)$actual;
-            }
+            },
+            'is_object' => function ($actual, $void = null) {
+                return is_object($actual);
+            },
+            'is_null' => function ($actual, $void = null) {
+                return is_null($actual);
+            },
+            '!is_null' => function ($actual, $void = null) {
+                return !is_null($actual);
+            },
         ];
 
         if (!array_key_exists($operator, $ops)) {
