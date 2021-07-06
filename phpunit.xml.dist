@@ -3,7 +3,7 @@
     colors="true"
     processIsolation="false"
     stopOnFailure="false"
-    bootstrap="tests/bootstrap.php"
+    bootstrap="./tests/bootstrap.php"
     >
     <php>
         <ini name="memory_limit" value="-1"/>
@@ -19,17 +19,17 @@
 
     <!-- Setup a listener for fixtures -->
     <listeners>
-        <listener class="CakephpFixtureFactories\TestSuite\FixtureInjector">
+        <listener class="CakephpTestSuiteLight\FixtureInjector">
             <arguments>
-                <object class="CakephpFixtureFactories\TestSuite\FixtureManager" />
+                <object class="CakephpTestSuiteLight\FixtureManager" />
             </arguments>
         </listener>
     </listeners>
 
+    <!-- Ignore vendor tests in code coverage reports -->
     <filter>
         <whitelist>
-            <directory suffix=".php">src/</directory>
+            <directory suffix=".php">./src/</directory>
         </whitelist>
     </filter>
-
 </phpunit>

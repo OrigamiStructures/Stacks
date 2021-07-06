@@ -146,8 +146,9 @@ $dbConnection = [
     'url' => env('DATABASE_TEST_URL', null),
     'migrations' => [
         ['connection' => 'test'],
-        ['plugin' => 'TestPlugin'],
+//        ['plugin' => 'TestPlugin'],
     ]
+
 ];
 
 ConnectionManager::setConfig('default', $dbConnection);

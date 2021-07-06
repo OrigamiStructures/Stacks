@@ -31,7 +31,7 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
 
 
     public $fixtures = [
-        'app.people',
+//        'app.people',
     ];
 
 
