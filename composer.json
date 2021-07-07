@@ -21,7 +21,11 @@
     },
     "autoload": {
         "psr-4": {
-            "Stacks\\": "src/"
+            "Stacks\\": "src/",
+            "TestApp\\": "tests/TestApp/src",
+            "TestApp\\Test\\": "tests/TestApp/tests",
+            "TestPlugin\\": "tests/TestApp/plugins/TestPlugin/src",
+            "TestPlugin\\Test\\": "tests/TestApp/plugins/TestPlugin/tests"
         }
     },
     "autoload-dev": {

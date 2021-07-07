@@ -8,6 +8,8 @@ use PHP_CodeSniffer\Tokenizers\PHP;
 use Stacks\Model\Lib\Layer;
 use Stacks\Model\Lib\LayerAccessArgs;
 use Stacks\Model\Lib\LayerAccessProcessor;
+use Stacks\Test\Factory\AuthorFactory;
+use Stacks\Test\Factory\CountryFactory;
 use Stacks\Test\Factory\PersonFactory;
 use Cake\ORM\TableRegistry;
 
@@ -37,10 +39,12 @@ class LayerAccessProcessorTest extends \Cake\TestSuite\TestCase
 
     public function setUp(): void
     {
-        $entities = PersonFactory::make(10)->persist();
-        $this->people = TableRegistry::getTableLocator()->get('People')->find()->toArray();
+//        debug(TableRegistry::getTableLocator()->get('Authors'));
+        $entities = AuthorFactory::make(10)->persist();
+        $this->people = TableRegistry::getTableLocator()->get('Authors')->find()->toArray();
         $this->layer = new Layer($this->people);
-        $this->processor = new LayerAccessProcessor('people', 'Person');
+//        debug($this->layer);
+        $this->processor = new LayerAccessProcessor('author', 'Author');
         $this->processor->insert($this->layer);
         parent::setUp();
     }

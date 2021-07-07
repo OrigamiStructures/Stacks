@@ -191,4 +191,5 @@ Security::setSalt('a-long-but-not-random-value');
 
 Inflector::rules('singular', ['/(ss)$/i' => '\1']);
 
+Configure::write('test_mode', true);
 Migrator::migrate();

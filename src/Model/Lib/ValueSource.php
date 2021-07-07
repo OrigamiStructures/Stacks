@@ -1,7 +1,9 @@
 <?php
 namespace Stacks\Model\Lib;
 
+use Cake\Core\Configure;
 use Cake\Core\ConventionsTrait;
+use Cake\Error\Debugger;
 use Cake\ORM\Entity;
 use Cake\Utility\Inflector;
 use Stacks\Lib\Traits\ErrorRegistryTrait;
@@ -137,8 +139,11 @@ class ValueSource {
 		if (is_string($entity)) {
 			$entity = namespaceSplit($entity);
 			$entity = array_pop($entity);
-			$className = "\\App\\Model\\Entity\\" .
-					$this->_singularName(Inflector::pluralize(ucfirst($entity)));
+			$namespace = Configure::read('test_mode')
+                ? '\TestApp\Model\Entity\\'
+                : '\App\Model\Entity\\';
+			$className = $namespace .
+                ucfirst($this->_singularName(Inflector::pluralize($entity)));
 			$entity = new $className();
 		}
 		if (is_a($entity, '\Cake\ORM\Entity')) {
