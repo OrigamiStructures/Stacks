@@ -41,5 +41,21 @@ class Author extends Entity
         'address' => true,
         'business_address' => true,
         'articles' => true,
+        'ambiguous' => true,
     ];
+
+    public function entityMethod()
+    {
+        return 'value from method';
+    }
+
+    public function _getAmbiguous()
+    {
+        return 'value from ambiguous property';
+    }
+
+    public function ambiguous()
+    {
+        return 'value from ambiguous method';
+    }
 }

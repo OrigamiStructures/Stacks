@@ -3,6 +3,7 @@ namespace Stacks\Model\Lib;
 
 use Cake\Core\Configure;
 use Cake\Core\ConventionsTrait;
+use Cake\Datasource\EntityInterface;
 use Cake\Error\Debugger;
 use Cake\ORM\Entity;
 use Cake\Utility\Inflector;
@@ -21,7 +22,7 @@ class ValueSource {
 	use ConventionsTrait;
 	use ErrorRegistryTrait;
 
-	/**
+    /**
 	 * Name of the property or method that provides the value
 	 * @var string
 	 */
@@ -46,8 +47,12 @@ class ValueSource {
 	 * @var boolean
 	 */
 	protected $_isProperty = FALSE;
+    /**
+     * @var Entity
+     */
+    private $entity;
 
-	/**
+    /**
 	 * Construct the object
 	 *
 	 * @param string|Entity $entity plural, singular, lc, initial cap all ok
@@ -55,12 +60,12 @@ class ValueSource {
 	 * @return boolean
 	 */
 	public function __construct($entity, $source) {
-		$entity = $this->_getSample($entity);
+		$this->entity = $this->_getSample($entity);
 		if ($this->_isEntity) {
-			$this->_identify($entity, $source);
+			$this->_identify($this->entity, $source);
 		}
 		$this->_source = trim($source, '().');
-		return $this->isValid();
+//		return $this->isValid();
 	}
 
 	/**
@@ -69,7 +74,7 @@ class ValueSource {
 	 * @return string
 	 */
 	public function entityName() {
-		return lcfirst(namespaceSplit($this->_name));
+		return namespaceSplit($this->_name)[1];
 	}
 
 	/**
@@ -99,7 +104,7 @@ class ValueSource {
 	/**
 	 * Return the target value from this entity
 	 *
-	 * @param Entity $entity
+	 * @param EntityInterface $entity
 	 * @return mixed
 	 */
 	public function value(Entity $entity) {
@@ -165,11 +170,18 @@ class ValueSource {
 	private function _identify($entity, $source) {
 		if(stristr($source, '..')) {
 			$this->_isProperty = TRUE;
-		} elseif(stristr($source, '()')) {
+            $this->_isMethod = false;
+            return;
+        }
+		if(stristr($source, '()')) {
 			$this->_isMethod = TRUE;
-		} elseif (method_exists($this->_name, $source)) {
+            $this->_isProperty = false;
+            return;
+        }
+		if (method_exists($this->_name, $source)) {
 			$this->_isMethod = TRUE;
-		} elseif (!empty($source)) {
+		}
+		if (array_key_exists($source, $this->entity->getAccessible())) {
 			$this->_isProperty = TRUE;
 		}
 		return;

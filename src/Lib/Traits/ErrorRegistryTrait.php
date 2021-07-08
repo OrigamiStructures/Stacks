@@ -34,7 +34,8 @@ trait ErrorRegistryTrait {
 		}, []);
 		$error = [$message, $stack];
 		$this->_errors[] = $error;
-		pr($error);
+//		pr($error);
+		return $error;
 	}
 
 
