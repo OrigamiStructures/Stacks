@@ -8,8 +8,7 @@ use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Event\Event;
 use Cake\Event\EventListenerInterface;
-use Cake\Filesystem\Folder;
-use Cake\I18n\Time;
+use Cake\I18n\FrozenTime;
 use Cake\Log\Log;
 use Cake\ORM\Entity;
 use Cake\ORM\TableRegistry;
@@ -161,7 +160,7 @@ class LayerSave implements EventListenerInterface
         $stackTableList = Introspection::stackTables();
         Cache::write(
             CacheCon::SCKEY,
-            ['Map Created' => 'Map Created: ' . Time::now()->toDateTimeString()],
+            ['Map Created' => 'Map Created: ' . FrozenTime::now()->toDateTimeString()],
             CacheCon::SCCONFIG
         );
         collection($stackTableList)
